@@ -1,7 +1,8 @@
 class Student:
 
-    def __init__(self,number,name,surname,description,submissions=[]):
+    def __init__(self,number,name,surname,description,email="",submissions=[]):
         self.__number=number
+        self.__email=email
         self.__name=name
         self.__surname=surname
         self.__description=description
