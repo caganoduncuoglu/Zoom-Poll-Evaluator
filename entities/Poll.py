@@ -1,6 +1,9 @@
 class Poll(object):
 
-    _poll_questions = []
+    def __init__(self, name, poll_questions=None):
 
-    def __init__(self, name):
+        if poll_questions is None:
+            poll_questions = []
+
+        set.__poll_questions = poll_questions
         self.__name = name
