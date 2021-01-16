@@ -82,14 +82,17 @@ class ExcelParser(metaclass=Singleton):
             sc.create_submission(row[1], row[2], row[3], q_and_a)
 
     def write_poll_outcomes(self, students, submissions):
-        rows = []
+        rows = []  # rows will be added to this list
+        columns = ['Student No', 'Name', 'Surname', 'Description']
+
         for student in students:
             q_a_list = []  # each poll has specific amount of questions, this list holds 1 or 0 depending on answers.
             num_of_questions = None  # each field will reset for each student
             num_of_correct_ans = 0
             success_rate = None
             success_percentage = None
-            row = []
+            row = [student.number, student.name, student.surname, student.description]
+
             for submission in submissions:   # find current poll submissions
                 if submission.poll == self.poll:
                     if submission.student == student:  # find student in submission list.
@@ -98,24 +101,28 @@ class ExcelParser(metaclass=Singleton):
                             num_of_questions = len(submission.student_answers)
 
                             if answer.question.true_answer == answer:
-                                q_a_list.append(1)  # answer matches with true answer
+                                row.append(1)  # answer matches with true answer
                                 num_of_correct_ans += 1
                             else:
-                                q_a_list.append(0)  # false
+                                row.append(0)  # false
 
             # calculating rate and percentage
             success_rate = num_of_correct_ans / num_of_questions
-            success_percentage = success_rate / 100
-            row = [student.number, student.name, student.surname, student.description, q_a_list,
-                                    success_rate, success_percentage]
+            success_percentage = success_rate * 100
+            row.append(success_rate)
+            row.append(success_percentage)
             rows.append(row)
 
-        output = pd.DataFrame(rows)
-        output.to_excel('./output.xlsx')
+        for i in range(num_of_questions):  # column tag for Q1, Q2 ...
+            tag = "Q" + str(i)
+            columns.append(tag)
 
-            # TODO: This will be printed on excel with pandas.
-            # print(student.number, student.name, student.surname, student.description, question_list,
-            #    success_rate, success_percentage, end='\n')
+        columns.append('Success Rate')  # continue appending column tags
+        columns.append('Success Percentage')
+
+        output = pd.DataFrame(rows, columns=columns)  # output as excel
+        output.to_excel('./output.xlsx')  # TODO: This will change to poll name
+
 
     def write_poll_statistics(self,poll):
         if poll == self.poll:
