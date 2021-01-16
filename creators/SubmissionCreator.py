@@ -33,21 +33,26 @@ class SubmissionCreator(metaclass=Singleton):
         student_answers = []
         for key in q_and_a:  # Iterating through each question and answer pairs.
             question_to_insert = None
-            answer_to_insert = None
+            answers_to_insert = []
 
             for question in poll.poll_questions:  # Finding question for current answer.
                 if question.description == key:
                     question_to_insert = question
 
-            for answer in question_to_insert.all_answers:  # Checking existence of question.
-                if answer.description == q_and_a[key]:
-                    answer_to_insert = answer
+            for answer_from_student in q_and_a[key]:
+                is_answer_exist = False
+                for answer in question_to_insert.all_answers:  # Checking existence of answer.
+                    if answer.description == answer_from_student:
+                        answers_to_insert.append(answer)
+                        is_answer_exist = True
+                        break
+                if not is_answer_exist:
+                    new_answer = Answer(answer_from_student,
+                                        question_to_insert)  # Creating answer for the poll if not exist.
+                    answers_to_insert.append(new_answer)
 
-            if answer_to_insert is None:
-                answer_to_insert = Answer(q_and_a[key],
-                                          question_to_insert)  # Creating answer for the poll if not exist.
-
-            student_answers.append(answer_to_insert)
+            for answer in answers_to_insert:
+                student_answers.append(answer)
 
         student = None
         all_students = StudentCreator().students
