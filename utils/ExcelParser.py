@@ -1,3 +1,5 @@
+
+
 from utils.Singleton import Singleton
 from entities.Student import Student
 from entities.Submission import Submission
@@ -37,4 +39,17 @@ class ExcelParser(metaclass=Singleton):
             print(student.number, student.name, student.surname, student.description, question_list,
                   success_rate, success_percentage, end='\n')
 
-    def write_poll_statics(self.):
+    def write_poll_statistics(self,poll):
+        if poll == self.poll:
+            for question in poll.poll_questions:
+                print(question.description)#bura bak
+                for answers in question.all_answers:
+                  # TODO: This will be printed on excel with pandas.
+                    print(answers +"--->"+ answers.number_of_answer_selection)
+                    #There should be a selection counter for Question to determine how many times answer is chosen.
+                    #For instance,  first choice is selected by 25 students, second one is 3, third 76, fourth 12 ...
+
+    def write_all_poll_outcomes(self,polls):
+        #poll adları dönen for loop
+            #write_poll_outcomes(students, submissions):
+
