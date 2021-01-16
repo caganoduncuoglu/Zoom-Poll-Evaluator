@@ -1,14 +1,11 @@
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
+import xlsxwriter
 
-from utils.Singleton import Singleton
-from entities.Student import Student
-from entities.Submission import Submission
-from entities.Answer import Answer
-from entities.Question import Question
 from creators.PollCreator import PollCreator
 from creators.StudentCreator import StudentCreator
 from creators.SubmissionCreator import SubmissionCreator
+from utils.Singleton import Singleton
 
 
 class ExcelParser(metaclass=Singleton):
@@ -95,7 +92,7 @@ class ExcelParser(metaclass=Singleton):
             success_percentage = None
             row = [student.number, student.name, student.surname, student.description]
 
-            for submission in submissions:   # find current poll submissions
+            for submission in submissions:  # find current poll submissions
                 if submission.poll == self.poll:
                     if submission.student == student:  # find student in submission list.
 
@@ -125,12 +122,10 @@ class ExcelParser(metaclass=Singleton):
         output = pd.DataFrame(rows, columns=columns)  # output as excel
         output.to_excel('./output.xlsx')  # TODO: This will change to poll name
 
-
     def write_poll_statistics(self, poll):
-
+        poll_excel = xlsxwriter.Workbook(poll.name + '.xlsx')
         if poll == self.poll:  # checks current poll
             for question in poll.poll_questions:  # find question in questions of that poll
-
                 list_number_selected_choice = []
                 correct_answer = question.true_answer
                 plt.title(question.description)
@@ -142,10 +137,14 @@ class ExcelParser(metaclass=Singleton):
                 index = question.all_answers.index(correct_answer)
                 pylist = plt.barh(question.all_answers, list_number_selected_choice, height=0.2)
                 pylist[index].set_color('g')
-                plt.savefig('save.png')
+                plt.savefig(question.description + '.png')
+
+                question_sheet = poll_excel.add_worksheet(question.description)
+                question_sheet.insert_image('A1', question.description + '.png')
+        poll_excel.close()
+
 
     def write_all_poll_outcomes(self, polls):
         print()
 # poll adları dönen for loop
 # write_poll_outcomes(students, submissions):
-
