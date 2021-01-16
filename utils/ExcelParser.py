@@ -1,15 +1,81 @@
-
+import pandas as pd
 
 from utils.Singleton import Singleton
-from entities.Student import Student
-from entities.Submission import Submission
-from entities.Answer import Answer
-from entities.Question import Question
+from creators.PollCreator import PollCreator
+from creators.StudentCreator import StudentCreator
+from creators.SubmissionCreator import SubmissionCreator
 
 class ExcelParser(metaclass=Singleton):
 
     def __init__(self, poll):
         self.poll = poll
+
+    def _read_max_file_column_count(self, filename: str, delimiter=','):
+        # The max column count a line in the file could have
+        largest_column_count = 0
+
+        # Loop the data lines
+        with open(filename, 'r', encoding='utf-8') as temp_f:
+            # Read the lines
+            lines = temp_f.readlines()
+
+            for line in lines:
+                # Count the column count for the current line
+                column_count = len(line.split(delimiter)) + 1
+
+                # Set the new most column count
+                largest_column_count = column_count if largest_column_count < column_count else largest_column_count
+        return largest_column_count
+
+    def read_students(self, filename: str):
+        # next line is for debugging
+        # pd.set_option('display.max_rows', None, 'display.max_columns', None, 'display.width', None)
+        df: pd.DataFrame = pd.read_excel(filename, header=None)
+        df.drop([0, 1, 3, 5, 6, 8, 9], axis=1, inplace=True)
+        df = df[pd.to_numeric(df[2], errors='coerce').notnull()]
+        df.reset_index(drop=True, inplace=True)
+        df.columns = ['studentid', 'firstname', 'lastname', 'repeat']
+        sc = StudentCreator()
+        for index, row in df.iterrows():
+            sc.create_student(
+                number=row['studentid'], name=row['firstname'], surname=row['lastname'],
+                description=pd.isna(row['repeat'])
+            )
+
+    def read_key(self, filename: str = None):
+        if filename is None:
+            filename = input("Please enter a filename for an answer key file:\n")
+
+        # next line is for debugging
+        # pd.set_option('display.max_rows', None, 'display.max_columns', None, 'display.width', None)
+        df: pd.DataFrame = pd.read_csv(filename, sep=';', header=None)
+        pollname = df[0][0]
+        df.drop(inplace=True, axis=0, labels=0)
+        df.reset_index(inplace=True, drop=True)
+        pc = PollCreator()
+        pc.create_poll(pollname)
+        # TODO Poll creation logic is flawed, how do we add questions to polls?
+
+    def read_submissions(self, filename: str = None):
+        if filename is None:
+            filename = input("Please enter a filename for an answer key file:\n")
+
+        # next line is for debugging
+        # pd.set_option('display.max_rows', None, 'display.max_columns', None, 'display.width', None)
+        df: pd.DataFrame = pd.read_csv(filename, sep=',', index_col=False, header=None, names=range(
+            self._read_max_file_column_count(filename)))
+        df.dropna(axis=1, how='all', inplace=True)
+        df.drop(labels=0, axis=1, inplace=True)
+        df.drop(labels=0, axis=0, inplace=True)
+        df.reset_index(drop=True, inplace=True)
+        sc = SubmissionCreator()
+        for index, row in df.iterrows():
+            q_and_a = dict()
+            for colindex, cell in row.iteritems():
+                if colindex < 4 or colindex % 2 == 1:
+                    continue
+                q_and_a[cell] = row[colindex + 1]
+            sc.create_submission(row[1], row[2], row[3], q_and_a)
 
     def write_poll_outcomes(self, students, submissions):
         for student in students:
