@@ -144,7 +144,7 @@ class ExcelParser(metaclass=Singleton):
                     # appends the number of student selections of answers at that question in the list.
                     list_number_selected_choice.append(answer.number_of_answer_selection)
 
-                #creates histogram as its desired.
+                #creates histogram as its desired
                 fig, ax = plt.subplots()
                 width = 0.75  # the width of the bars
                 ind = np.arange(len(list_number_selected_choice))  # the x locations for the groups
