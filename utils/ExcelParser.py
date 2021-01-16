@@ -1,19 +1,15 @@
 
 import os
-import numpy as np
+
 import matplotlib.pyplot as plt
-
+import numpy as np
 import pandas as pd
+import xlsxwriter
 
-
-from utils.Singleton import Singleton
-from entities.Student import Student
-from entities.Submission import Submission
-from entities.Answer import Answer
-from entities.Question import Question
 from creators.PollCreator import PollCreator
 from creators.StudentCreator import StudentCreator
 from creators.SubmissionCreator import SubmissionCreator
+from utils.Singleton import Singleton
 
 
 class ExcelParser(metaclass=Singleton):
@@ -133,6 +129,8 @@ class ExcelParser(metaclass=Singleton):
 
     def write_poll_statistics(self, poll):
 
+        poll_excel = xlsxwriter.Workbook(poll.name + '.xlsx')
+
         if poll == self.poll:  # checks current poll
             for question in poll.poll_questions:  # find question in questions of that poll
 
@@ -157,7 +155,11 @@ class ExcelParser(metaclass=Singleton):
                     ax.text(v, i, " " + str(v) + " times", color='blue', va='center', fontweight='bold')
                 plt.xlabel('x')
                 plt.ylabel('y')
-                plt.savefig(os.path.join('test.png'), dpi=300, format='png', bbox_inches='tight')
+                plt.savefig(os.path.join(question.description + '.png'), dpi=300, format='png', bbox_inches='tight')
+
+                question_sheet = poll_excel.add_worksheet(question.description)
+                question_sheet.insert_image('A1', question.description + '.png')
+        poll_excel.close()
 
     def write_all_poll_outcomes(self, polls):
         print()
