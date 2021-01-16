@@ -17,7 +17,7 @@ class ExcelParser(metaclass=Singleton):
             success_rate = None
             success_percentage = None
 
-            for submission in submissions:
+            for submission in submissions and submission.poll == self.poll:  # find current poll submissions
                 if submission.student == student:  # find student in submission list.
 
                     for answer in submission.student_answers:  # for each answer in this submission check if it is true.
