@@ -8,15 +8,16 @@ class PollCreator(metaclass=Singleton):
     def __init__(self):
         self.polls = []
 
-    def create_poll(self, name, question, answer):
+    def create_poll(self, name, q_and_a):
         poll = Poll(name)
         # TODO: Might an error occur here because of a warning, look here later.
-        new_question = Question(question, None, poll, None)
-        new_answer = Answer(answer, new_question)
+        for key in q_and_a:
+            new_question = Question(key, None, poll, None)
+            new_answer = Answer(q_and_a[key], new_question)
 
-        new_question.true_answer = new_answer
-        new_question.all_answers.append(new_answer)
+            new_question.true_answer = new_answer
+            new_question.all_answers.append(new_answer)
 
-        poll.poll_questions.append(new_question)
+            poll.poll_questions.append(new_question)
         self.polls.append(poll)
         return poll
