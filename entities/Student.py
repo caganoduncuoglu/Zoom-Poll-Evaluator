@@ -9,3 +9,4 @@ class Student:
         self.surname = surname
         self.description = description
         self.submissions = submissions
+        self.attendances = []
