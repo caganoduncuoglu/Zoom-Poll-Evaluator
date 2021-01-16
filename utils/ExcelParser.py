@@ -36,3 +36,5 @@ class ExcelParser(metaclass=Singleton):
             # TODO: This will be printed on excel with pandas.
             print(student.number, student.name, student.surname, student.description, question_list,
                   success_rate, success_percentage, end='\n')
+
+    def write_poll_statics(self.):
