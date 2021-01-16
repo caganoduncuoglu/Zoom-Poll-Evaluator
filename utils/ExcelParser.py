@@ -1,5 +1,10 @@
-import pandas as pd
+
+import os
+import numpy as np
 import matplotlib.pyplot as plt
+
+import pandas as pd
+
 
 from utils.Singleton import Singleton
 from entities.Student import Student
@@ -139,10 +144,20 @@ class ExcelParser(metaclass=Singleton):
                     # appends the number of student selections of answers at that question in the list.
                     list_number_selected_choice.append(answer.number_of_answer_selection)
 
+                #creates histogram as its desired.
+                fig, ax = plt.subplots()
+                width = 0.75  # the width of the bars
+                ind = np.arange(len(list_number_selected_choice))  # the x locations for the groups
                 index = question.all_answers.index(correct_answer)
-                pylist = plt.barh(question.all_answers, list_number_selected_choice, height=0.2)
+                pylist = ax.barh(ind, list_number_selected_choice, width, color="blue")
                 pylist[index].set_color('g')
-                plt.savefig('save.png')
+                ax.set_yticks(ind + width / 2)
+                ax.set_yticklabels(question.all_answers, minor=False)
+                for i, v in enumerate(list_number_selected_choice):
+                    ax.text(v, i, " " + str(v) + " times", color='blue', va='center', fontweight='bold')
+                plt.xlabel('x')
+                plt.ylabel('y')
+                plt.savefig(os.path.join('test.png'), dpi=300, format='png', bbox_inches='tight')
 
     def write_all_poll_outcomes(self, polls):
         print()
