@@ -133,7 +133,7 @@ class ExcelParser(metaclass=Singleton):
 
         if poll == self.poll:  # checks current poll
             for question in poll.poll_questions:  # find question in questions of that poll
-
+                question_counter = 1
                 list_number_selected_choice = []
                 correct_answer = question.true_answer
                 plt.title(question.description)
@@ -155,10 +155,12 @@ class ExcelParser(metaclass=Singleton):
                     ax.text(v, i, " " + str(v) + " times", color='blue', va='center', fontweight='bold')
                 plt.xlabel('x')
                 plt.ylabel('y')
-                plt.savefig(os.path.join(question.description + '.png'), dpi=300, format='png', bbox_inches='tight')
+                plt.savefig(os.path.join("Question"+question_counter+ '.png'), dpi=300, format='png', bbox_inches='tight')
 
-                question_sheet = poll_excel.add_worksheet(question.description)
-                question_sheet.insert_image('A1', question.description + '.png')
+                # Insert image of the questions of polls to the excel sheet.
+                question_sheet = poll_excel.add_worksheet("Question"+question_counter)
+                question_sheet.insert_image('A1', "Question"+question_counter + '.png')
+                question_counter = question_counter+1
         poll_excel.close()
 
     def write_all_poll_outcomes(self, polls):
