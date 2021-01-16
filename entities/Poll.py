@@ -5,5 +5,5 @@ class Poll(object):
         if poll_questions is None:
             poll_questions = []
 
-        set.__poll_questions = poll_questions
-        self.__name = name
+        self.poll_questions = poll_questions
+        self.name = name

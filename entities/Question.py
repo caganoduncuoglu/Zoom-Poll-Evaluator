@@ -4,7 +4,7 @@ class Question(object):
         if all_answers is None:
             all_answers = []
 
-        self.__description = description
-        self.__true_answer = true_answer
-        self.__poll = poll
-        self.__all_answers = all_answers
+        self.description = description
+        self.true_answer = true_answer
+        self.poll = poll
+        self.all_answers = all_answers
