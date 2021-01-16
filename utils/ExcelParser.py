@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from utils.Singleton import Singleton
 from entities.Student import Student
@@ -8,6 +9,7 @@ from entities.Question import Question
 from creators.PollCreator import PollCreator
 from creators.StudentCreator import StudentCreator
 from creators.SubmissionCreator import SubmissionCreator
+
 
 class ExcelParser(metaclass=Singleton):
 
@@ -124,18 +126,26 @@ class ExcelParser(metaclass=Singleton):
         output.to_excel('./output.xlsx')  # TODO: This will change to poll name
 
 
-    def write_poll_statistics(self,poll):
-        if poll == self.poll:
-            for question in poll.poll_questions:
-                print(question.description)#bura bak
-                for answers in question.all_answers:
-                  # TODO: This will be printed on excel with pandas.
-                    print(answers +"--->"+ answers.number_of_answer_selection)
-                    #There should be a selection counter for Question to determine how many times answer is chosen.
-                    #For instance,  first choice is selected by 25 students, second one is 3, third 76, fourth 12 ...
+    def write_poll_statistics(self, poll):
 
-    def write_all_poll_outcomes(self,polls):
+        if poll == self.poll:  # checks current poll
+            for question in poll.poll_questions:  # find question in questions of that poll
+
+                list_number_selected_choice = []
+                correct_answer = question.true_answer
+                plt.title(question.description)
+
+                for answer in question.all_answers:
+                    # appends the number of student selections of answers at that question in the list.
+                    list_number_selected_choice.append(answer.number_of_answer_selection)
+
+                index = question.all_answers.index(correct_answer)
+                pylist = plt.barh(question.all_answers, list_number_selected_choice, height=0.2)
+                pylist[index].set_color('g')
+                plt.savefig('save.png')
+
+    def write_all_poll_outcomes(self, polls):
         print()
- # poll adları dönen for loop
- # write_poll_outcomes(students, submissions):
+# poll adları dönen for loop
+# write_poll_outcomes(students, submissions):
 
