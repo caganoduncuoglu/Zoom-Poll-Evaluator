@@ -2,6 +2,7 @@ from creators.PollCreator import PollCreator
 from creators.StudentCreator import StudentCreator
 from entities.Answer import Answer
 from entities.Submission import Submission
+from utils.NameComperator import NameComparator
 from utils.Singleton import Singleton
 
 
@@ -51,10 +52,12 @@ class SubmissionCreator(metaclass=Singleton):
         student = None
         all_students = StudentCreator().students
 
-        # TODO: Try to think edge cases for finding students.
+        # FIXME: The usage of NameComparator singleton class may be wrong and possible errors may occur.
         for currStudent in all_students:  # Finding student coming from submission list inside BYS student list.
-            if currStudent.name.lower() + " " + currStudent.surname.lower() == username:
+            NameComparator(username, currStudent.name, currStudent.surname)
+            if NameComparator.consider_multiple_names_and_surnames():
                 student = currStudent
+                break
 
         if student is None:  # Error check for student.
             print(username + " student couldn't find in BYS document.")
