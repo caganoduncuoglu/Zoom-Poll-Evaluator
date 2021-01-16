@@ -1,6 +1,6 @@
 class Question(object):
 
-    def __init__(self, description, true_answer, poll, all_answers=None, number_of_answer_selection=None):
+    def __init__(self, description, true_answer, poll, all_answers=None):
         if all_answers is None:
             all_answers = []
         self.description = description
