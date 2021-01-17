@@ -1,10 +1,10 @@
 
 import os
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import xlsxwriter
+#import xlsxwriter
 
 from creators.PollCreator import PollCreator
 from creators.StudentCreator import StudentCreator
@@ -145,8 +145,8 @@ class ExcelParser(metaclass=Singleton):
                                     row.append(0)
 
             # calculating rate and percentage
-            success_rate = num_of_correct_ans / num_of_questions
-            success_percentage = success_rate * 100
+            success_rate = str(num_of_correct_ans) + " of " + str(num_of_questions)
+            success_percentage = num_of_correct_ans / num_of_questions * 100
             row.append(success_rate)
             row.append(success_percentage)
             rows.append(row)
