@@ -211,7 +211,86 @@ class ExcelParser(metaclass=Singleton):
                 question_counter = question_counter + 1
         poll_excel.close()
 
-    def write_all_poll_outcomes(self, polls):
-        print()
-# poll adları dönen for loop
-# write_poll_outcomes(students, submissions):
+    def write_all_poll_outcomes(self, students, submissions, poll):
+        rows = []  # rows will be added to this list
+        columns = ['Quiz Poll Name', 'Date']
+
+        for student in students:
+            num_of_questions = 0  # each field will reset for each student
+            num_of_correct_ans = 0
+            success_rate = None
+            success_percentage = None
+            row = []
+
+            for submission in submissions:  # find current poll submissions
+                if submission.poll == poll:
+
+                    if submission.student == student:  # find student in submission list.
+                        answered = []
+                        row.append(poll.name)
+                        row.append(submission.submitted_datetime)
+
+                        for answer1 in submission.student_answers:  # for each answer in this submission check if it is true.
+                            multiple_answers = [answer1]
+
+                            for answer2 in submission.student_answers:  # find if multiple answer exists
+                                if answer1.question == answer2.question and answer1 != answer2:
+                                    multiple_answers.append(answer2)
+
+                            if len(multiple_answers) == 1:  # for single answers
+                                if answer1 not in answered:  # avoiding adding last answer of multiple answers
+                                    if answer1 in answer1.question.true_answers:  # if answer matches with true answer
+
+                                        num_of_correct_ans += 1
+
+
+
+                                    num_of_questions += 1
+                                    answered.append(answer1)
+
+                            elif len(multiple_answers) != 1:  # for multiple answers
+                                if answer1 not in answered:  # if it is not in list already
+                                    num_of_questions += 1
+                                    correct_streak = 0  # hold a correct streak for only true answers
+
+                                    for m_answer in multiple_answers:  # append to processed list
+                                        answered.append(m_answer)
+
+                                        if m_answer in m_answer.question.true_answers:
+                                            correct_streak += 1
+
+                                    if correct_streak == len(
+                                            multiple_answers):  # all multiple answers have to be correct
+
+                                        num_of_correct_ans += 1
+
+
+
+            # calculating rate and percentage
+            success_rate = str(num_of_correct_ans) + " of " + str(num_of_questions)
+            success_percentage = num_of_correct_ans / num_of_questions * 100
+            row.append(success_rate)
+            row.append(success_percentage)
+            rows.append(row)
+
+        columns.append('Success Rate')  # continue appending column tags
+        columns.append('Success Percentage')
+
+        output2 = pd.DataFrame(rows, columns=columns)
+        output = pd.read_excel('GlobalList.xlsx')
+        output = output.join(output2)
+        output = output.drop(output.columns[0], axis=1)
+        output['Student No'] = output['Student No'].astype(str)
+        output.to_excel('GlobalList.xlsx')
+
+    def write_all_students(self, students):
+        rows = []  # rows will be added to this list
+        columns = ['Student No', 'Name', 'Surname', 'Description']
+
+        for student in students:
+            row = [student.number, student.name, student.surname, student.description]
+            rows.append(row)
+
+        output = pd.DataFrame(rows, columns=columns)  # output as excel
+        output['Student No'] = output['Student No'].astype(str)
+        output.to_excel('GlobalList.xlsx')  # output
