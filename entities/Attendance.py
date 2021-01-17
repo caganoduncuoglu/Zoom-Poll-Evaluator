@@ -1,8 +1,7 @@
-from entities.Question import Question
+class Attendance:
 
-
-class Attendance(Question):
-
-    def __init__(self, session, description, true_answer, poll):
-        super().__init__(description, true_answer, poll)
+    def __init__(self, session, base_time, is_poll_question):
         self.session = session
+        self.base_time = base_time
+        self.is_poll_question = is_poll_question
+        self.student_numbers = []
