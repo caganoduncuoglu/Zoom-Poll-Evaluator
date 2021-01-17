@@ -34,7 +34,7 @@ class SubmissionCreator(metaclass=Singleton):
             exit(-1)
 
         submit_date_parsed = submit_date.split(" ")
-        base_time = submit_date_parsed[0:2]
+        base_time = submit_date_parsed[3][0:2]
         attendance = AttendanceCreator().create_attendance(filename, base_time, is_attendance_question)
 
         student_answers = []
