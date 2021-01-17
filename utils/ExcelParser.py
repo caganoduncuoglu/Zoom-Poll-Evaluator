@@ -169,7 +169,8 @@ class ExcelParser(metaclass=Singleton):
         columns.append('Success Percentage')
 
         output = pd.DataFrame(rows, columns=columns)  # output as excel
-        output.to_excel('./output.xlsx')  # TODO: This will change to poll name
+        poll_name = self.poll.name + ".xlsx"
+        output.to_excel(poll_name)  # TODO: This will change to poll name
 
     def write_poll_statistics(self, poll):
 
