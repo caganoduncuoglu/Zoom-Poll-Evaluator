@@ -1,5 +1,3 @@
-from fuzzywuzzy import process
-
 from creators.AttendanceCreator import AttendanceCreator
 from creators.PollCreator import PollCreator
 from creators.StudentCreator import StudentCreator
@@ -62,6 +60,8 @@ class SubmissionCreator(metaclass=Singleton):
 
             for answer in answers_to_insert:
                 student_answers.append(answer)
+                if answer not in question_to_insert.all_answers:
+                    question_to_insert.all_answers.append(answer)
                 answer.number_of_answer_selection += 1
 
         student = None
