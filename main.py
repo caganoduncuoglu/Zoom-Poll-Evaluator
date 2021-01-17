@@ -27,7 +27,7 @@ poll_count = 1
 for poll in PollCreator().polls:
     ExcelParser().write_poll_outcomes(StudentCreator().students, SubmissionCreator().submissions,
                                       poll)
-    ExcelParser().write_poll_statistics(poll)
+    ExcelParser().write_poll_statistics(poll, poll_count)
     ExcelParser().write_all_poll_outcomes(StudentCreator().students, SubmissionCreator().submissions, poll, poll_count)
     poll_count += 1
 

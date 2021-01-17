@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import xlsxwriter
+import openpyxl
+import xlrd
+
 
 from creators.PollCreator import PollCreator
 from creators.StudentCreator import StudentCreator
@@ -186,15 +189,16 @@ class ExcelParser(metaclass=Singleton):
         poll_name = poll.name + ".xlsx"
         output.to_excel(poll_name)  # output
 
-    def write_poll_statistics(self, poll):
+    def write_poll_statistics(self, poll, poll_counter):
 
         poll_excel = xlsxwriter.Workbook(poll.name + "-graphs" + '.xlsx')
 
         if poll == poll:  # checks current poll
             question_counter = 1
             for question in poll.poll_questions:  # find question in questions of that poll
+
                 list_number_selected_choice = []
-                correct_answers = question.true_answers
+                #correct_answers = question.true_answers
                 plt.title(question.description)
 
                 for answer in question.all_answers:
@@ -203,26 +207,25 @@ class ExcelParser(metaclass=Singleton):
 
                 # creates histogram as its desired
                 fig, ax = plt.subplots()
-                width = 0.75  # the width of the bars
+                width = 0.5  # the width of the bars
                 ind = np.arange(len(list_number_selected_choice))  # the x locations for the groups
+
                 pylist = ax.barh(ind, list_number_selected_choice, width, color="blue")
 
-                for my_answer in correct_answers: #Green bar for the more than one correct answers.
+                for my_answer in question.true_answers: #Green bar for the more than one correct answers.
                     index = question.all_answers.index(my_answer)
-                    pylist[index].set_color('g')
+                    pylist[index].set_color('red')
 
                 ax.set_yticks(ind + width / 2)
                 ax.set_yticklabels(question.all_answers, minor=False)
                 for i, v in enumerate(list_number_selected_choice):
-                    ax.text(v, i, " " + str(v) + " times", color='blue', va='center', fontweight='bold')
-                plt.xlabel('x')
-                plt.ylabel('y')
-                plt.savefig(os.path.join("Question" + str(question_counter) + '.png'),
+                    ax.text(v, i, " " + str(v) + " times", color='blue', va='center', fontweight='normal')
+                plt.savefig(os.path.join("Poll" + str(poll_counter) + " " + "Question" + str(question_counter) + '.png'),
                             dpi=300, format='png', bbox_inches='tight')
-
+                plt.close()
                 # Insert image of the questions of polls to the excel sheet.
-                question_sheet = poll_excel.add_worksheet("Question" + str(question_counter))
-                question_sheet.insert_image('A1', "Question" + str(question_counter) + '.png')
+                question_sheet = poll_excel.add_worksheet("Poll" + str(poll_counter)+ " " + "Question" + str(question_counter))
+                question_sheet.insert_image('A1', "Poll" + str(poll_counter) + " " + "Question" + str(question_counter) + '.png')
                 question_counter = question_counter + 1
         poll_excel.close()
 
