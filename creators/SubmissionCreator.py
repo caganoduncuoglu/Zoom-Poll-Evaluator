@@ -1,3 +1,4 @@
+from creators.AttendanceCreator import AttendanceCreator
 from creators.PollCreator import PollCreator
 from creators.StudentCreator import StudentCreator
 from entities.Answer import Answer
@@ -13,25 +14,39 @@ class SubmissionCreator(metaclass=Singleton):
         self.submissions = []
 
     def create_submission(self, username, email, submit_date, q_and_a,
-                          attendance):  # Creates a new submission from a student.
+                          filename):  # Creates a new submission from a student.
         poll = None
         all_polls = PollCreator().polls
         curr_poll: Poll
+        is_attendance_question = False
         for curr_poll in all_polls:  # Finding poll by looking answered questions are the same or not.
             for question in curr_poll.poll_questions:
                 is_match = False
                 for key in q_and_a:
+                    if key == "Are you attending this lecture?":
+                        is_attendance_question = True
+                        break
+
                     if key == question.description:
                         is_match = True
+                if is_attendance_question:
+                    break
+
                 if not is_match:  # Check is this poll a match.
                     continue
+            if is_attendance_question:
+                break
 
             poll = curr_poll  # If this poll is a match, assign it and break loop.
             break
 
-        if poll is None:  # Error check for poll.
+        if poll is None and not is_attendance_question:  # Error check for poll.
             print("Poll could not matched with existing ones.")
             exit(-1)
+
+        submit_date_parsed = submit_date.split(" ")
+        base_time = submit_date_parsed[0:2]
+        attendance = AttendanceCreator().create_attendance(filename, base_time, is_attendance_question)
 
         student_answers = []
         for key in q_and_a:  # Iterating through each question and answer pairs.
@@ -75,8 +90,9 @@ class SubmissionCreator(metaclass=Singleton):
         if student.email == "":  # Add email information coming from submission list.
             student.email = email
 
-        if attendance not in student.attendances:
+        if attendance not in student.attendances:  # Add attendance if not exist in student attendances list.
             student.attendances.append(attendance)
+            attendance.student_numbers.append(student.number)
 
         submission = Submission(student_answers, submit_date, student, poll)
         self.submissions.append(submission)

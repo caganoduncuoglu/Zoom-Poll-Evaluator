@@ -92,11 +92,17 @@ class ExcelParser(metaclass=Singleton):
             sc.create_submission(row[1], row[2], row[3], q_and_a)
 
     def write_session_attendance(self, students, attendances):
-        columns = ['Student No', 'Name', 'Surname', 'Description', 'Attendance', 'Attendance Rate']
+        columns = ['Student No', 'Name', 'Surname', 'Description', 'Poll Attendances', 'Hourly Attendance',
+                   'Attendance Rate (Hourly)']
         rows = []
         for student in students:
-            row = [student.number, student.name, student.surname, student.description, len(student.attendances),
-                   (len(student.attendances) * 1.0) / len(attendances)]
+            poll_attendances_count = 0
+            for attendance in student.attendances:
+                if attendance.is_poll_question:
+                    poll_attendances_count += 1
+
+            row = [student.number, student.name, student.surname, student.description, poll_attendances_count,
+                   len(student.attendances), (len(student.attendances) * 1.0) / len(attendances)]
             rows.append(row)
 
         output = pd.DataFrame(rows, columns=columns)

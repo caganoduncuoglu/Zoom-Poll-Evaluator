@@ -5,9 +5,18 @@ from utils.Singleton import Singleton
 class AttendanceCreator(metaclass=Singleton):
 
     def __init__(self):
-        self.attendance = []
+        self.attendances = []
 
-    def create_attendance(self, session, question, poll):
-        attendance = Attendance(session, question, None, poll)
-        self.attendance.append(attendance)
-        return attendance
+    def create_attendance(self, session, base_time, is_poll_question=False):
+        # TODO: There should be a check about returning same attendance if base time and session variables are equal.
+        exist_attendance = None
+        for attendance in self.attendances:
+            if attendance.session == session and attendance.base_time == base_time:
+                exist_attendance = attendance
+
+        if exist_attendance is None:
+            attendance = Attendance(session, base_time, is_poll_question)
+            self.attendances.append(attendance)
+            return attendance
+        else:
+            return exist_attendance
