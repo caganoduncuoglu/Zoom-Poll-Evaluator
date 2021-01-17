@@ -170,7 +170,7 @@ class ExcelParser(metaclass=Singleton):
 
         output = pd.DataFrame(rows, columns=columns)  # output as excel
         poll_name = self.poll.name + ".xlsx"
-        output.to_excel(poll_name)  # TODO: This will change to poll name
+        output.to_excel(poll_name)  # output
 
     def write_poll_statistics(self, poll):
 
