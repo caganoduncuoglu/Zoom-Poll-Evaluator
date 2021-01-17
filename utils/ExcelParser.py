@@ -1,9 +1,9 @@
 import os
 
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-#import xlsxwriter
+import xlsxwriter
 
 from creators.PollCreator import PollCreator
 from creators.StudentCreator import StudentCreator
