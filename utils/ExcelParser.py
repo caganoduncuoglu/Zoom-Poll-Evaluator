@@ -107,7 +107,6 @@ class ExcelParser(metaclass=Singleton):
         columns = ['Student No', 'Name', 'Surname', 'Description']
 
         for student in students:
-            q_a_list = []  # each poll has specific amount of questions, this list holds 1 or 0 depending on answers.
             num_of_questions = 0  # each field will reset for each student
             num_of_correct_ans = 0
             success_rate = None
@@ -117,7 +116,7 @@ class ExcelParser(metaclass=Singleton):
             for submission in submissions:  # find current poll submissions
                 if submission.poll == self.poll:
                     if submission.student == student:  # find student in submission list.
-
+                        answered = []
                         for answer1 in submission.student_answers:  # for each answer in this submission check if it is true.
                             multiple_answers = [answer1]
 
@@ -126,7 +125,7 @@ class ExcelParser(metaclass=Singleton):
                                     multiple_answers.append(answer2)
 
                             if len(multiple_answers) == 1:  # for single answers
-                                if answer1 not in row:  # avoiding adding last answer of multiple answers
+                                if answer1 not in answered:  # avoiding adding last answer of multiple answers
                                     if answer1 in answer1.question.true_answers:  # if answer matches with true answer
                                         row.append(1)  # answer matches with true answer
                                         num_of_correct_ans += 1
@@ -135,24 +134,26 @@ class ExcelParser(metaclass=Singleton):
                                         row.append(0)  # false
 
                                     num_of_questions += 1
+                                    answered.append(answer1)
 
                             elif len(multiple_answers) != 1:  # for multiple answers
-                                num_of_questions += 1
-                                correct_streak = 0
+                                if answer1 not in answered:  # if it is not in list already
+                                    num_of_questions += 1
+                                    correct_streak = 0  # hold a correct streak for only true answers
 
-                                for m_answer in multiple_answers:
-                                    if m_answer in row:  # if answer is already in the list then it means that we already added.
-                                        break
-                                    else:
+                                    for m_answer in multiple_answers:  # append to processed list
+                                        answered.append(m_answer)
+
                                         if m_answer in m_answer.question.true_answers:
                                             correct_streak += 1
 
-                                if correct_streak == len(multiple_answers):   # all multiple answers have to be correct
-                                    row.append(1)
-                                    num_of_correct_ans += 1
+                                    if correct_streak == len(multiple_answers):   # all multiple answers have to be correct
+                                        row.append(1)
+                                        num_of_correct_ans += 1
 
-                                else:
-                                    row.append(0)
+                                    else:
+                                        row.append(0)
+
 
             # calculating rate and percentage
             success_rate = str(num_of_correct_ans) + " of " + str(num_of_questions)
@@ -161,7 +162,8 @@ class ExcelParser(metaclass=Singleton):
             row.append(success_percentage)
             rows.append(row)
 
-        for i in range(num_of_questions):
+        for i in range(num_of_questions):  # it is for columns like Q1, Q2 ...
+            i += 1  # start from Q1
             tag = "Q" + str(i)
             columns.append(tag)
 
