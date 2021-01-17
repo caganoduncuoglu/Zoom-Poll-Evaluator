@@ -16,6 +16,12 @@ class ExcelParser(metaclass=Singleton):
     def __init__(self):
         self.poll = None
 
+    def _get_tokenized_answers(self, answerstr: str):
+        if ';' not in answerstr:
+            return [answerstr]
+        else:
+            return answerstr.split(';')
+
     def _read_max_file_column_count(self, filename: str, delimiter=','):
         # The max column count a line in the file could have
         largest_column_count = 0
@@ -59,8 +65,10 @@ class ExcelParser(metaclass=Singleton):
         df.drop(inplace=True, axis=0, labels=0)
         df.reset_index(inplace=True, drop=True)
         pc = PollCreator()
-        pc.create_poll(pollname)
-        # TODO Poll creation logic is flawed, how do we add questions to polls?
+        q_and_a = dict()
+        for index, row in df.iterrows():
+            q_and_a[row[0]] = self._get_tokenized_answers(row[1])
+        pc.create_poll(pollname, q_and_a)
 
     def read_submissions(self, filename: str = None):
         if filename is None:
@@ -75,12 +83,13 @@ class ExcelParser(metaclass=Singleton):
         df.drop(labels=0, axis=0, inplace=True)
         df.reset_index(drop=True, inplace=True)
         sc = SubmissionCreator()
+        # TODO Create Attendance and pass to sc
         for index, row in df.iterrows():
             q_and_a = dict()
             for colindex, cell in row.iteritems():
                 if colindex < 4 or colindex % 2 == 1:
                     continue
-                q_and_a[cell] = row[colindex + 1]
+                q_and_a[cell] = self._get_tokenized_answers(row[colindex + 1])
             sc.create_submission(row[1], row[2], row[3], q_and_a)
 
     def write_poll_outcomes(self, students, submissions):
