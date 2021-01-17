@@ -10,3 +10,6 @@ class Student:
         self.description = description
         self.submissions = submissions
         self.attendances = []
+
+    def __str__(self):
+        return self.number + ": " + self.name + " " + self.surname

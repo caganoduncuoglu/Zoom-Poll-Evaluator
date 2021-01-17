@@ -13,9 +13,8 @@ from utils.Singleton import Singleton
 
 
 class ExcelParser(metaclass=Singleton):
-
-    def __init__(self, poll):
-        self.poll = poll
+    def __init__(self):
+        self.poll = None
 
     def _read_max_file_column_count(self, filename: str, delimiter=','):
         # The max column count a line in the file could have
@@ -100,7 +99,8 @@ class ExcelParser(metaclass=Singleton):
                 if submission.poll == self.poll:
                     if submission.student == student:  # find student in submission list.
 
-                        for answer in submission.student_answers:  # for each answer in this submission check if it is true.
+                        for answer in submission.student_answers:
+                            # for each answer in this submission check if it is true.
                             num_of_questions = len(submission.student_answers)
 
                             if answer.question.true_answer == answer:
@@ -126,7 +126,6 @@ class ExcelParser(metaclass=Singleton):
         output = pd.DataFrame(rows, columns=columns)  # output as excel
         output.to_excel('./output.xlsx')  # TODO: This will change to poll name
 
-
     def write_poll_statistics(self, poll):
 
         poll_excel = xlsxwriter.Workbook(poll.name + '.xlsx')
@@ -142,7 +141,7 @@ class ExcelParser(metaclass=Singleton):
                     # appends the number of student selections of answers at that question in the list.
                     list_number_selected_choice.append(answer.number_of_answer_selection)
 
-                #creates histogram as its desired
+                # creates histogram as its desired
                 fig, ax = plt.subplots()
                 width = 0.75  # the width of the bars
                 ind = np.arange(len(list_number_selected_choice))  # the x locations for the groups
@@ -155,7 +154,8 @@ class ExcelParser(metaclass=Singleton):
                     ax.text(v, i, " " + str(v) + " times", color='blue', va='center', fontweight='bold')
                 plt.xlabel('x')
                 plt.ylabel('y')
-                plt.savefig(os.path.join("Question"+question_counter+ '.png'), dpi=300, format='png', bbox_inches='tight')
+                plt.savefig(os.path.join("Question" + question_counter + '.png'),
+                            dpi=300, format='png', bbox_inches='tight')
 
                 # Insert image of the questions of polls to the excel sheet.
                 question_sheet = poll_excel.add_worksheet("Question"+question_counter)
