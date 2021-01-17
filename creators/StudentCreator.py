@@ -11,3 +11,12 @@ class StudentCreator(metaclass=Singleton):
         student = Student(number, name, surname, description)
         self.students.append(student)
         return student
+
+    def getstudent(self, searchstring: str):
+        student = None
+        curstudent: Student
+        for curstudent in self.students:
+            if curstudent.name + " " + curstudent.surname == searchstring:
+                student = curstudent
+                break
+        return student
