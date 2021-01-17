@@ -1,6 +1,7 @@
 from creators.PollCreator import PollCreator
 from creators.StudentCreator import StudentCreator
 from entities.Answer import Answer
+from entities.Poll import Poll
 from entities.Submission import Submission
 from utils.NameComperator import NameComparator
 from utils.Singleton import Singleton
@@ -15,8 +16,9 @@ class SubmissionCreator(metaclass=Singleton):
                           attendance):  # Creates a new submission from a student.
         poll = None
         all_polls = PollCreator().polls
+        curr_poll: Poll
         for curr_poll in all_polls:  # Finding poll by looking answered questions are the same or not.
-            for question in curr_poll.questions:
+            for question in curr_poll.poll_questions:
                 is_match = False
                 for key in q_and_a:
                     if key == question.description:
@@ -36,9 +38,11 @@ class SubmissionCreator(metaclass=Singleton):
             question_to_insert = None
             answers_to_insert = []
 
+            # TODO Maybe some wrapper methods in PolLCreator for getting question instances would make things easier
             for question in poll.poll_questions:  # Finding question for current answer.
                 if question.description == key:
                     question_to_insert = question
+                    break
 
             for answer_from_student in q_and_a[key]:
                 is_answer_exist = False
@@ -60,8 +64,7 @@ class SubmissionCreator(metaclass=Singleton):
 
         # FIXME: The usage of NameComparator singleton class may be wrong and possible errors may occur.
         for currStudent in all_students:  # Finding student coming from submission list inside BYS student list.
-            NameComparator(username, currStudent.name, currStudent.surname)
-            if NameComparator.consider_multiple_names_and_surnames():
+            if NameComparator(username, currStudent.name, currStudent.surname).consider_multiple_names_and_surnames():
                 student = currStudent
                 break
 
