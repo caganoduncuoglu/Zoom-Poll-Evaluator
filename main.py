@@ -21,6 +21,7 @@ if os.path.exists(attendancefilename):
 ExcelParser().read_submissions("CSE3063_20201123_Mon_zoom_PollReport.csv")
 print(SubmissionCreator().submissions)
 JsonParser().write_attendances(AttendanceCreator().attendances, attendancefilename)
+ExcelParser().write_session_attendance(StudentCreator().students, AttendanceCreator().attendances)
 ExcelParser().write_all_students(StudentCreator().students)
 poll_count = 1
 for poll in PollCreator().polls:
@@ -29,4 +30,6 @@ for poll in PollCreator().polls:
     ExcelParser().write_poll_statistics(poll)
     ExcelParser().write_all_poll_outcomes(StudentCreator().students, SubmissionCreator().submissions, poll, poll_count)
     poll_count += 1
+
+
 

@@ -86,8 +86,7 @@ class ExcelParser(metaclass=Singleton):
                 if colindex < 4 or colindex % 2 == 1:
                     continue
                 if pd.isna(row[colindex + 1]):
-                    print("ERROR: Student has not answered a question for a poll! Name: " + row[1])
-                    exit(-1)
+                    break
                 else:
                     q_and_a[cell] = self._get_tokenized_answers(row[colindex + 1])
             sc.create_submission(row[1], row[2], row[3], q_and_a, filename)

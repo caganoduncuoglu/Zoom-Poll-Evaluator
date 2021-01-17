@@ -22,53 +22,54 @@ class SubmissionCreator(metaclass=Singleton):
         if len(q_and_a) == 1 and next(iter(q_and_a.keys())) == "Are you attending this lecture?":
             is_attendance_question = True
 
-        for curr_poll in all_polls:  # Finding poll by looking answered questions are the same or not.
-            if set([str(k) for k in q_and_a.keys()]) == set([str(q) for q in curr_poll.poll_questions]):
-                # Found matching poll
-                poll = curr_poll
+        if not is_attendance_question:
+            for curr_poll in all_polls:  # Finding poll by looking answered questions are the same or not.
+                if set([str(k) for k in q_and_a.keys()]) == set([str(q) for q in curr_poll.poll_questions]):
+                    # Found matching poll
+                    poll = curr_poll
 
-        if poll is None and not is_attendance_question:  # Error check for poll.
-            print("Poll could not matched with existing ones.")
-            exit(-1)
+            if poll is None:  # Error check for poll.
+                print("Poll could not matched with existing ones.")
+                exit(-1)
 
         submit_date_parsed = submit_date.split(" ")
         base_time = submit_date_parsed[3][0:2]
         attendance = AttendanceCreator().create_attendance(filename, base_time, is_attendance_question)
 
-        student_answers = []
-        for key in q_and_a:  # Iterating through each question and answer pairs.
-            question_to_insert = None
-            answers_to_insert = []
+        if not is_attendance_question:
+            student_answers = []
+            for key in q_and_a:  # Iterating through each question and answer pairs.
+                question_to_insert = None
+                answers_to_insert = []
 
-            # TODO Maybe some wrapper methods in PolLCreator for getting question instances would make things easier
-            for question in poll.poll_questions:  # Finding question for current answer.
-                if question.description == key:
-                    question_to_insert = question
-                    break
-
-            for answer_from_student in q_and_a[key]:
-                is_answer_exist = False
-                for answer in question_to_insert.all_answers:  # Checking existence of answer.
-                    if answer.description == answer_from_student:
-                        answers_to_insert.append(answer)
-                        is_answer_exist = True
+                # TODO Maybe some wrapper methods in PolLCreator for getting question instances would make things easier
+                for question in poll.poll_questions:  # Finding question for current answer.
+                    if question.description == key:
+                        question_to_insert = question
                         break
-                if not is_answer_exist:
-                    new_answer = Answer(answer_from_student,
-                                        question_to_insert)  # Creating answer for the poll if not exist.
-                    answers_to_insert.append(new_answer)
 
-            for answer in answers_to_insert:
-                student_answers.append(answer)
-                if answer not in question_to_insert.all_answers:
-                    question_to_insert.all_answers.append(answer)
-                answer.number_of_answer_selection += 1
+                for answer_from_student in q_and_a[key]:
+                    is_answer_exist = False
+                    for answer in question_to_insert.all_answers:  # Checking existence of answer.
+                        if answer.description == answer_from_student:
+                            answers_to_insert.append(answer)
+                            is_answer_exist = True
+                            break
+                    if not is_answer_exist:
+                        new_answer = Answer(answer_from_student,
+                                            question_to_insert)  # Creating answer for the poll if not exist.
+                        answers_to_insert.append(new_answer)
+
+                for answer in answers_to_insert:
+                    student_answers.append(answer)
+                    if answer not in question_to_insert.all_answers:
+                        question_to_insert.all_answers.append(answer)
+                    answer.number_of_answer_selection += 1
 
         student = None
         all_students = StudentCreator().students
 
         student = NameComparator().fuzzy_find(username, all_students)
-
 
         if student is None:  # Error check for student.
             print(username + " student couldn't find in BYS document.")
@@ -81,6 +82,8 @@ class SubmissionCreator(metaclass=Singleton):
             student.attendances.append(attendance)
             attendance.student_numbers.append(student.number)
 
-        submission = Submission(student_answers, submit_date, student, poll)
-        self.submissions.append(submission)
+        submission = None
+        if not is_attendance_question:
+            submission = Submission(student_answers, submit_date, student, poll)
+            self.submissions.append(submission)
         return submission
