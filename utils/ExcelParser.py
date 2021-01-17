@@ -188,7 +188,7 @@ class ExcelParser(metaclass=Singleton):
             for question in poll.poll_questions:  # find question in questions of that poll
                 question_counter = 1
                 list_number_selected_choice = []
-                correct_answer = question.true_answer
+                correct_answers = question.true_answers
                 plt.title(question.description)
 
                 for answer in question.all_answers:
@@ -199,9 +199,13 @@ class ExcelParser(metaclass=Singleton):
                 fig, ax = plt.subplots()
                 width = 0.75  # the width of the bars
                 ind = np.arange(len(list_number_selected_choice))  # the x locations for the groups
-                index = question.all_answers.index(correct_answer)
+
+                for my_answer in correct_answers: #Green bar for the more than one correct answers.
+                    index = question.all_answers.index(my_answer)
+                    pylist[index].set_color('g')
+
                 pylist = ax.barh(ind, list_number_selected_choice, width, color="blue")
-                pylist[index].set_color('g')
+
                 ax.set_yticks(ind + width / 2)
                 ax.set_yticklabels(question.all_answers, minor=False)
                 for i, v in enumerate(list_number_selected_choice):
