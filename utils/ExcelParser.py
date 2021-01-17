@@ -102,7 +102,7 @@ class ExcelParser(metaclass=Singleton):
         output = pd.DataFrame(rows, columns=columns)
         output.to_excel("student_attendances.xlsx")
 
-    def write_poll_outcomes(self, students, submissions):
+    def write_poll_outcomes(self, students, submissions, poll):
         rows = []  # rows will be added to this list
         columns = ['Student No', 'Name', 'Surname', 'Description']
 
@@ -114,7 +114,7 @@ class ExcelParser(metaclass=Singleton):
             row = [student.number, student.name, student.surname, student.description]
 
             for submission in submissions:  # find current poll submissions
-                if submission.poll == self.poll:
+                if submission.poll == poll:
                     if submission.student == student:  # find student in submission list.
                         answered = []
                         for answer1 in submission.student_answers:  # for each answer in this submission check if it is true.
