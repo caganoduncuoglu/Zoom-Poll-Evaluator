@@ -199,12 +199,11 @@ class ExcelParser(metaclass=Singleton):
                 fig, ax = plt.subplots()
                 width = 0.75  # the width of the bars
                 ind = np.arange(len(list_number_selected_choice))  # the x locations for the groups
+                pylist = ax.barh(ind, list_number_selected_choice, width, color="blue")
 
                 for my_answer in correct_answers: #Green bar for the more than one correct answers.
                     index = question.all_answers.index(my_answer)
                     pylist[index].set_color('g')
-
-                pylist = ax.barh(ind, list_number_selected_choice, width, color="blue")
 
                 ax.set_yticks(ind + width / 2)
                 ax.set_yticklabels(question.all_answers, minor=False)
