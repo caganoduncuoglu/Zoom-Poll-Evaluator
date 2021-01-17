@@ -12,7 +12,8 @@ class SubmissionCreator(metaclass=Singleton):
     def __init__(self):
         self.submissions = []
 
-    def create_submission(self, username, email, submit_date, q_and_a):  # Creates a new submission from a student.
+    def create_submission(self, username, email, submit_date, q_and_a,
+                          attendance):  # Creates a new submission from a student.
         poll = None
         all_polls = PollCreator().polls
         curr_poll: Poll
@@ -73,6 +74,9 @@ class SubmissionCreator(metaclass=Singleton):
 
         if student.email == "":  # Add email information coming from submission list.
             student.email = email
+
+        if attendance not in student.attendances:
+            student.attendances.append(attendance)
 
         submission = Submission(student_answers, submit_date, student, poll)
         self.submissions.append(submission)

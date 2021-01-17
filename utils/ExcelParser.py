@@ -1,4 +1,3 @@
-
 import os
 
 #import matplotlib.pyplot as plt
@@ -92,6 +91,17 @@ class ExcelParser(metaclass=Singleton):
                 q_and_a[cell] = self._get_tokenized_answers(row[colindex + 1])
             sc.create_submission(row[1], row[2], row[3], q_and_a)
 
+    def write_session_attendance(self, students, attendances):
+        columns = ['Student No', 'Name', 'Surname', 'Description', 'Attendance', 'Attendance Rate']
+        rows = []
+        for student in students:
+            row = [student.number, student.name, student.surname, student.description, len(student.attendances),
+                   (len(student.attendances) * 1.0) / len(attendances)]
+            rows.append(row)
+
+        output = pd.DataFrame(rows, columns=columns)
+        output.to_excel("student_attendances.xlsx")
+
     def write_poll_outcomes(self, students, submissions):
         rows = []  # rows will be added to this list
         columns = ['Student No', 'Name', 'Surname', 'Description']
@@ -104,7 +114,7 @@ class ExcelParser(metaclass=Singleton):
             success_percentage = None
             row = [student.number, student.name, student.surname, student.description]
 
-            for submission in submissions:   # find current poll submissions
+            for submission in submissions:  # find current poll submissions
                 if submission.poll == self.poll:
                     if submission.student == student:  # find student in submission list.
 
@@ -193,13 +203,12 @@ class ExcelParser(metaclass=Singleton):
                             dpi=300, format='png', bbox_inches='tight')
 
                 # Insert image of the questions of polls to the excel sheet.
-                question_sheet = poll_excel.add_worksheet("Question"+question_counter)
-                question_sheet.insert_image('A1', "Question"+question_counter + '.png')
-                question_counter = question_counter+1
+                question_sheet = poll_excel.add_worksheet("Question" + question_counter)
+                question_sheet.insert_image('A1', "Question" + question_counter + '.png')
+                question_counter = question_counter + 1
         poll_excel.close()
 
     def write_all_poll_outcomes(self, polls):
         print()
 # poll adları dönen for loop
 # write_poll_outcomes(students, submissions):
-
