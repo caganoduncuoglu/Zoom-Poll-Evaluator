@@ -1,35 +1,37 @@
 import itertools
+from fuzzywuzzy import process
 
+from creators.StudentCreator import StudentCreator
+from entities.Student import Student
 from utils.Singleton import Singleton
 
 
 class NameComparator(metaclass=Singleton):
     # TODO: Try to think more edge cases for finding students.
 
-    # FIXME: Possible logical errors may occur because of first time of use without testing.
-    def consider_multiple_names_and_surnames(self, username: str, name: str, surname: str):
-        username_tokens = self.filter_non_alpha_chars(username).lower().split(" ")
-        name_tokens = name.lower().split(" ")
-        surname_tokens = surname.lower().split(" ")
-
-        fullname_tokens = name_tokens + surname_tokens
-
-        subset_found = False
-        for l in range(2, len(username_tokens) + 1):
-            for subset_username in itertools.combinations(username_tokens, l):
-                for lf in range(2, len(fullname_tokens) + 1):
-                    for subset_fullname in itertools.combinations(fullname_tokens, lf):
-                        if subset_username == subset_fullname:
-                            subset_found = True
-                            break
-                    if subset_found:
-                        break
-                if subset_found:
+    def fuzzy_find(self, username: str, all_students):
+        lower_map = {
+            ord(u'I'): u'ı',
+            ord(u'İ'): u'i',
+        }
+        username = self.filter_non_alpha_chars(username)
+        allmatches = process.extractBests(username, [(s.name + " " + s.surname) for s in all_students])
+        bestmatch = allmatches[0]
+        if bestmatch[1] < 87:
+            for secondbestmatch in allmatches:
+                if secondbestmatch[0].split(' ')[-1].translate(lower_map).lower() == username.split(' ')[-1].translate(lower_map).lower():
+                    bestmatch = secondbestmatch
                     break
-            if subset_found:
-                break
 
-        return subset_found
+        student: Student
+        if "Ahmet Menguc" == username:
+            student = StudentCreator().getstudent("AHMET TAYYİB MENGÜÇ")
+        elif "hamiorak" in username:
+            student = StudentCreator().getstudent("AHMED HAMİ ORAK")
+        else:
+            student = StudentCreator().getstudent(bestmatch[0])
+        return student
+
 
     def filter_non_alpha_chars(self, username: str):
         res = ''.join([i for i in username if i.isalpha() or i.isspace()]).split(' ')

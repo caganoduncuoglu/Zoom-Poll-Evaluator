@@ -11,4 +11,8 @@ ExcelParser().read_key("development_poll.csv")
 print(PollCreator().polls)
 ExcelParser().read_submissions("CSE3063_20201116_Mon_zoom_PollReport.csv")
 print(SubmissionCreator().submissions)
-ExcelParser().write_poll_outcomes(StudentCreator().students, SubmissionCreator().submissions, PollCreator().polls[0])
+for poll in PollCreator().polls:
+    ExcelParser().write_poll_outcomes(StudentCreator().students, SubmissionCreator().submissions,
+                                      poll)
+    ExcelParser().write_poll_statistics(poll)
+

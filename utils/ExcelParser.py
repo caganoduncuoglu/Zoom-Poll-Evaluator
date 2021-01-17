@@ -12,8 +12,6 @@ from utils.Singleton import Singleton
 
 
 class ExcelParser(metaclass=Singleton):
-    def __init__(self):
-        self.poll = None
 
     def _get_tokenized_answers(self, answerstr: str):
         if ';' not in answerstr:
@@ -111,6 +109,7 @@ class ExcelParser(metaclass=Singleton):
         rows = []  # rows will be added to this list
         columns = ['Student No', 'Name', 'Surname', 'Description']
 
+        max_num_of_questions = 0
         for student in students:
             num_of_questions = 0  # each field will reset for each student
             num_of_correct_ans = 0
@@ -163,12 +162,16 @@ class ExcelParser(metaclass=Singleton):
 
             # calculating rate and percentage
             success_rate = str(num_of_correct_ans) + " of " + str(num_of_questions)
-            success_percentage = num_of_correct_ans / num_of_questions * 100
+            if num_of_questions == 0:
+                success_percentage = 0
+            else:
+                max_num_of_questions = num_of_questions
+                success_percentage = num_of_correct_ans / num_of_questions * 100
             row.append(success_rate)
             row.append(success_percentage)
             rows.append(row)
 
-        for i in range(num_of_questions):  # it is for columns like Q1, Q2 ...
+        for i in range(max_num_of_questions):  # it is for columns like Q1, Q2 ...
             i += 1  # start from Q1
             tag = "Q" + str(i)
             columns.append(tag)
@@ -177,14 +180,14 @@ class ExcelParser(metaclass=Singleton):
         columns.append('Success Percentage')
 
         output = pd.DataFrame(rows, columns=columns)  # output as excel
-        poll_name = self.poll.name + ".xlsx"
+        poll_name = poll.name + ".xlsx"
         output.to_excel(poll_name)  # output
 
     def write_poll_statistics(self, poll):
 
         poll_excel = xlsxwriter.Workbook(poll.name + '.xlsx')
 
-        if poll == self.poll:  # checks current poll
+        if poll == poll:  # checks current poll
             for question in poll.poll_questions:  # find question in questions of that poll
                 question_counter = 1
                 list_number_selected_choice = []

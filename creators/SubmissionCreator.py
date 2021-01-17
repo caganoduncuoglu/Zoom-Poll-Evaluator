@@ -6,6 +6,7 @@ from creators.StudentCreator import StudentCreator
 from entities.Answer import Answer
 from entities.Poll import Poll
 from entities.Submission import Submission
+from utils.NameComperator import NameComparator
 from utils.Singleton import Singleton
 
 
@@ -20,7 +21,7 @@ class SubmissionCreator(metaclass=Singleton):
         all_polls = PollCreator().polls
         curr_poll: Poll
         is_attendance_question = False
-        if q_and_a.keys()[0] == "Are you attending this lecture?":
+        if len(q_and_a) == 1 and next(iter(q_and_a.keys())) == "Are you attending this lecture?":
             is_attendance_question = True
 
         for curr_poll in all_polls:  # Finding poll by looking answered questions are the same or not.
@@ -65,9 +66,8 @@ class SubmissionCreator(metaclass=Singleton):
         student = None
         all_students = StudentCreator().students
 
-        # TODO Move into NameComparator and optimize.
-        bestmatch = process.extractOne(username, [(s.name + " " + s.surname) for s in all_students])[0]
-        student = StudentCreator().getstudent(bestmatch)
+        student = NameComparator().fuzzy_find(username, all_students)
+
 
         if student is None:  # Error check for student.
             print(username + " student couldn't find in BYS document.")
