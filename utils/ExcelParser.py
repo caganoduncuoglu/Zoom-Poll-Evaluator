@@ -82,14 +82,13 @@ class ExcelParser(metaclass=Singleton):
         df.drop(labels=0, axis=0, inplace=True)
         df.reset_index(drop=True, inplace=True)
         sc = SubmissionCreator()
-        # TODO Create Attendance and pass to sc
         for index, row in df.iterrows():
             q_and_a = dict()
             for colindex, cell in row.iteritems():
                 if colindex < 4 or colindex % 2 == 1:
                     continue
                 q_and_a[cell] = self._get_tokenized_answers(row[colindex + 1])
-            sc.create_submission(row[1], row[2], row[3], q_and_a)
+            sc.create_submission(row[1], row[2], row[3], q_and_a, filename)
 
     def write_session_attendance(self, students, attendances):
         columns = ['Student No', 'Name', 'Surname', 'Description', 'Poll Attendances', 'Hourly Attendance',
@@ -123,7 +122,8 @@ class ExcelParser(metaclass=Singleton):
                 if submission.poll == poll:
                     if submission.student == student:  # find student in submission list.
                         answered = []
-                        for answer1 in submission.student_answers:  # for each answer in this submission check if it is true.
+                        for answer1 in submission.student_answers:
+                            # for each answer in this submission check if it is true.
                             multiple_answers = [answer1]
 
                             for answer2 in submission.student_answers:  # find if multiple answer exists
@@ -153,13 +153,13 @@ class ExcelParser(metaclass=Singleton):
                                         if m_answer in m_answer.question.true_answers:
                                             correct_streak += 1
 
-                                    if correct_streak == len(multiple_answers):   # all multiple answers have to be correct
+                                    if correct_streak == len(multiple_answers):
+                                        # all multiple answers have to be correct
                                         row.append(1)
                                         num_of_correct_ans += 1
 
                                     else:
                                         row.append(0)
-
 
             # calculating rate and percentage
             success_rate = str(num_of_correct_ans) + " of " + str(num_of_questions)
