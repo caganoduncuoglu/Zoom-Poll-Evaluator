@@ -62,6 +62,7 @@ class SubmissionCreator(metaclass=Singleton):
 
             for answer in answers_to_insert:
                 student_answers.append(answer)
+                answer.number_of_answer_selection += 1
 
         student = None
         all_students = StudentCreator().students

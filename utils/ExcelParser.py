@@ -223,10 +223,11 @@ class ExcelParser(metaclass=Singleton):
                 question_counter = question_counter + 1
         poll_excel.close()
 
-    def write_all_poll_outcomes(self, students, submissions, poll):
+    def write_all_poll_outcomes(self, students, submissions, poll, poll_count):
         rows = []  # rows will be added to this list
         columns = ['Quiz Poll Name', 'Date']
 
+        max_num_of_questions = 0
         for student in students:
             num_of_questions = 0  # each field will reset for each student
             num_of_correct_ans = 0
@@ -255,8 +256,6 @@ class ExcelParser(metaclass=Singleton):
 
                                         num_of_correct_ans += 1
 
-
-
                                     num_of_questions += 1
                                     answered.append(answer1)
 
@@ -280,7 +279,11 @@ class ExcelParser(metaclass=Singleton):
 
             # calculating rate and percentage
             success_rate = str(num_of_correct_ans) + " of " + str(num_of_questions)
-            success_percentage = num_of_correct_ans / num_of_questions * 100
+            if num_of_questions == 0:
+                success_percentage = 0
+            else:
+                max_num_of_questions = num_of_questions
+                success_percentage = num_of_correct_ans / num_of_questions * 100
             row.append(success_rate)
             row.append(success_percentage)
             rows.append(row)
@@ -290,14 +293,14 @@ class ExcelParser(metaclass=Singleton):
 
         output2 = pd.DataFrame(rows, columns=columns)
         output = pd.read_excel('GlobalList.xlsx')
-        output = output.join(output2)
+        output = output.join(output2, rsuffix=poll_count)
         output = output.drop(output.columns[0], axis=1)
         output['Student No'] = output['Student No'].astype(str)
         output.to_excel('GlobalList.xlsx')
 
     def write_all_students(self, students):
         rows = []  # rows will be added to this list
-        columns = ['Student No', 'Name', 'Surname', 'Description']
+        columns = ['Student No', 'Name', 'Surname', 'Repeat']
 
         for student in students:
             row = [student.number, student.name, student.surname, student.description]
