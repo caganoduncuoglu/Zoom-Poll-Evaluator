@@ -1,10 +1,11 @@
+from fuzzywuzzy import process
+
 from creators.AttendanceCreator import AttendanceCreator
 from creators.PollCreator import PollCreator
 from creators.StudentCreator import StudentCreator
 from entities.Answer import Answer
 from entities.Poll import Poll
 from entities.Submission import Submission
-from utils.NameComperator import NameComparator
 from utils.Singleton import Singleton
 
 
@@ -19,26 +20,13 @@ class SubmissionCreator(metaclass=Singleton):
         all_polls = PollCreator().polls
         curr_poll: Poll
         is_attendance_question = False
+        if q_and_a.keys()[0] == "Are you attending this lecture?":
+            is_attendance_question = True
+
         for curr_poll in all_polls:  # Finding poll by looking answered questions are the same or not.
-            for question in curr_poll.poll_questions:
-                is_match = False
-                for key in q_and_a:
-                    if key == "Are you attending this lecture?":
-                        is_attendance_question = True
-                        break
-
-                    if key == question.description:
-                        is_match = True
-                if is_attendance_question:
-                    break
-
-                if not is_match:  # Check is this poll a match.
-                    continue
-            if is_attendance_question:
-                break
-
-            poll = curr_poll  # If this poll is a match, assign it and break loop.
-            break
+            if set([str(k) for k in q_and_a.keys()]) == set([str(q) for q in curr_poll.poll_questions]):
+                # Found matching poll
+                poll = curr_poll
 
         if poll is None and not is_attendance_question:  # Error check for poll.
             print("Poll could not matched with existing ones.")
@@ -77,11 +65,9 @@ class SubmissionCreator(metaclass=Singleton):
         student = None
         all_students = StudentCreator().students
 
-        # FIXME: The usage of NameComparator singleton class may be wrong and possible errors may occur.
-        for currStudent in all_students:  # Finding student coming from submission list inside BYS student list.
-            if NameComparator(username, currStudent.name, currStudent.surname).consider_multiple_names_and_surnames():
-                student = currStudent
-                break
+        # TODO Move into NameComparator and optimize.
+        bestmatch = process.extractOne(username, [(s.name + " " + s.surname) for s in all_students])[0]
+        student = StudentCreator().getstudent(bestmatch)
 
         if student is None:  # Error check for student.
             print(username + " student couldn't find in BYS document.")
