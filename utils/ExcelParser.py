@@ -13,9 +13,14 @@ from utils.Singleton import Singleton
 
 
 class ExcelParser(metaclass=Singleton):
+    def __init__(self):
+        self.poll = None
 
-    def __init__(self, poll):
-        self.poll = poll
+    def _get_tokenized_answers(self, answerstr: str):
+        if ';' not in answerstr:
+            return [answerstr]
+        else:
+            return answerstr.split(';')
 
     def _read_max_file_column_count(self, filename: str, delimiter=','):
         # The max column count a line in the file could have
@@ -60,8 +65,10 @@ class ExcelParser(metaclass=Singleton):
         df.drop(inplace=True, axis=0, labels=0)
         df.reset_index(inplace=True, drop=True)
         pc = PollCreator()
-        pc.create_poll(pollname)
-        # TODO Poll creation logic is flawed, how do we add questions to polls?
+        q_and_a = dict()
+        for index, row in df.iterrows():
+            q_and_a[row[0]] = self._get_tokenized_answers(row[1])
+        pc.create_poll(pollname, q_and_a)
 
     def read_submissions(self, filename: str = None):
         if filename is None:
@@ -76,12 +83,13 @@ class ExcelParser(metaclass=Singleton):
         df.drop(labels=0, axis=0, inplace=True)
         df.reset_index(drop=True, inplace=True)
         sc = SubmissionCreator()
+        # TODO Create Attendance and pass to sc
         for index, row in df.iterrows():
             q_and_a = dict()
             for colindex, cell in row.iteritems():
                 if colindex < 4 or colindex % 2 == 1:
                     continue
-                q_and_a[cell] = row[colindex + 1]
+                q_and_a[cell] = self._get_tokenized_answers(row[colindex + 1])
             sc.create_submission(row[1], row[2], row[3], q_and_a)
 
     def write_poll_outcomes(self, students, submissions):
@@ -153,7 +161,6 @@ class ExcelParser(metaclass=Singleton):
         output = pd.DataFrame(rows, columns=columns)  # output as excel
         output.to_excel('./output.xlsx')  # TODO: This will change to poll name
 
-
     def write_poll_statistics(self, poll):
 
         poll_excel = xlsxwriter.Workbook(poll.name + '.xlsx')
@@ -169,7 +176,7 @@ class ExcelParser(metaclass=Singleton):
                     # appends the number of student selections of answers at that question in the list.
                     list_number_selected_choice.append(answer.number_of_answer_selection)
 
-                #creates histogram as its desired
+                # creates histogram as its desired
                 fig, ax = plt.subplots()
                 width = 0.75  # the width of the bars
                 ind = np.arange(len(list_number_selected_choice))  # the x locations for the groups
@@ -182,7 +189,8 @@ class ExcelParser(metaclass=Singleton):
                     ax.text(v, i, " " + str(v) + " times", color='blue', va='center', fontweight='bold')
                 plt.xlabel('x')
                 plt.ylabel('y')
-                plt.savefig(os.path.join("Question"+question_counter+ '.png'), dpi=300, format='png', bbox_inches='tight')
+                plt.savefig(os.path.join("Question" + question_counter + '.png'),
+                            dpi=300, format='png', bbox_inches='tight')
 
                 # Insert image of the questions of polls to the excel sheet.
                 question_sheet = poll_excel.add_worksheet("Question"+question_counter)

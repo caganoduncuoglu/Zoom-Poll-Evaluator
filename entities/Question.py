@@ -7,3 +7,6 @@ class Question(object):
         self.true_answers = true_answers
         self.poll = poll
         self.all_answers = all_answers
+
+    def __str__(self):
+        return self.description
