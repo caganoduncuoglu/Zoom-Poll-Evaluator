@@ -64,11 +64,15 @@ class ExcelParser(metaclass=Singleton):
         curr_question_desc = None
         for line in f:
             if "poll " in line.lower() and "polls" not in line.lower():
-                pc.create_poll(curr_poll_name, q_and_a)  # Create a poll with completed read operations.
+                if curr_poll_name is not None:
+                    pc.create_poll(curr_poll_name, q_and_a)  # Create a poll with completed read operations.
                 q_and_a.clear()  # Clear questions for a new poll.
                 curr_poll_name = line.split("\t")[0].split(":")[1]
             elif "choice" in line.lower():
-                curr_question_desc = line[3:]  # This can be changed because the size of questions is unknown.
+                curr_line = line[3:-1]
+                curr_line = curr_line.replace(" ( Multiple Choice)", "")
+                curr_line = curr_line.replace(" ( Single Choice)", "")
+                curr_question_desc = curr_line
             elif "answer" in line.lower():
                 if curr_question_desc in q_and_a.keys():
                     q_and_a[curr_question_desc].append(line.split(":")[1][:-1])
@@ -89,9 +93,9 @@ class ExcelParser(metaclass=Singleton):
         df.reset_index(drop=True, inplace=True)
         sc = SubmissionCreator()
 
-        poll_time = df.loc[3][2]
+        poll_time = df.iloc[2][2]
         for index, row in df.iterrows():
-            if len(row) < 5:
+            if index < 5:
                 continue
             q_and_a = dict()
             for colindex, cell in row.iteritems():
@@ -101,7 +105,7 @@ class ExcelParser(metaclass=Singleton):
                     break
                 else:
                     q_and_a[cell] = self._get_tokenized_answers(row[colindex + 1])
-            sc.create_submission(row[1], row[2], row[3], q_and_a, filename)
+            sc.create_submission(row[1], row[2], poll_time, q_and_a, filename)
 
     def write_session_attendance(self, students, attendances):
         columns = ['Student No', 'Name', 'Surname', 'Description', 'Poll Attendances', 'Hourly Attendance',
