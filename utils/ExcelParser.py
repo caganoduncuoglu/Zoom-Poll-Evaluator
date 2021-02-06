@@ -182,12 +182,13 @@ class ExcelParser(metaclass=Singleton):
                                         row.append(0)
 
             # calculating rate and percentage
-            success_rate = str(num_of_correct_ans) + " of " + str(num_of_questions)
             if num_of_questions == 0:
-                success_percentage = 0
+                success_rate = 0
             else:
                 max_num_of_questions = num_of_questions
-                success_percentage = num_of_correct_ans / num_of_questions * 100
+                success_rate = num_of_correct_ans / num_of_questions
+                success_percentage = success_rate * 100
+
             row.append(success_rate)
             row.append(success_percentage)
             rows.append(row)
@@ -299,12 +300,13 @@ class ExcelParser(metaclass=Singleton):
 
 
             # calculating rate and percentage
-            success_rate = str(num_of_correct_ans) + " of " + str(num_of_questions)
             if num_of_questions == 0:
-                success_percentage = 0
+                success_rate = 0
             else:
                 max_num_of_questions = num_of_questions
-                success_percentage = num_of_correct_ans / num_of_questions * 100
+                success_rate = num_of_correct_ans / num_of_questions
+                success_percentage = success_rate * 100
+
             row.append(success_rate)
             row.append(success_percentage)
             rows.append(row)
