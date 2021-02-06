@@ -14,7 +14,7 @@ from utils.Singleton import Singleton
 class ExcelParser(metaclass=Singleton):
 
     def _get_tokenized_answers(self, answerstr: str):
-        if ';' not in answerstr:
+        if ";" not in answerstr:
             return [answerstr]
         else:
             return answerstr.split(';')
@@ -77,7 +77,7 @@ class ExcelParser(metaclass=Singleton):
                 if curr_question_desc in q_and_a.keys():
                     q_and_a[curr_question_desc].append(line.split(":")[1][:-1])
                 else:
-                    q_and_a[curr_question_desc] = []
+                    q_and_a[curr_question_desc] = [line.split(":")[1][:-1]]
 
     def read_submissions(self, filename: str = None):
         if filename is None:
@@ -104,12 +104,12 @@ class ExcelParser(metaclass=Singleton):
                 if pd.isna(row[colindex + 1]):
                     break
                 else:
-                    q_and_a[cell] = self._get_tokenized_answers(row[colindex + 1])
+                    q_and_a[cell] = self._get_tokenized_answers(str(row[colindex + 1]))
             sc.create_submission(row[1], row[2], poll_time, q_and_a, filename)
 
     def write_session_attendance(self, students, attendances):
-        columns = ['Student No', 'Name', 'Surname', 'Description', 'Poll Attendances', 'Hourly Attendance',
-                   'Attendance Rate (Hourly)']
+        columns = ['Student No', 'Name', 'Surname', 'Description', 'Poll Attendances', 'Total Attendance',
+                   'Attendance Rate']
         rows = []
         for student in students:
             poll_attendances_count = 0
@@ -130,62 +130,52 @@ class ExcelParser(metaclass=Singleton):
 
         max_num_of_questions = 0
         for student in students:
+            if student.name == "HAYRULLAH":
+                print("test")
+
             num_of_questions = 0  # each field will reset for each student
             num_of_correct_ans = 0
-            success_rate = None
-            success_percentage = None
             row = [student.number, student.name, student.surname, student.description]
 
             for submission in submissions:  # find current poll submissions
                 if submission.poll == poll:
                     if submission.student == student:  # find student in submission list.
-                        answered = []
-                        for answer1 in submission.student_answers:
-                            # for each answer in this submission check if it is true.
-                            multiple_answers = [answer1]
+                        for question in submission.poll.poll_questions:
+                            related_student_answers = []
 
-                            for answer2 in submission.student_answers:  # find if multiple answer exists
-                                if answer1.question == answer2.question and answer1 != answer2:
-                                    multiple_answers.append(answer2)
+                            for answer in submission.student_answers:
+                                if answer.question.description == question.description:
+                                    related_student_answers.append(answer)
 
-                            if len(multiple_answers) == 1:  # for single answers
-                                if answer1 not in answered:  # avoiding adding last answer of multiple answers
-                                    if answer1 in answer1.question.true_answers:  # if answer matches with true answer
-                                        row.append(1)  # answer matches with true answer
+                            is_truly_answered = False
+                            for related_student_curr_answer in related_student_answers:
+                                for question_true_answer in question.true_answers:
+                                    if related_student_curr_answer.description.strip() == question_true_answer.description.strip():
                                         num_of_correct_ans += 1
+                                        is_truly_answered = True
+                                        break
+                                if is_truly_answered:
+                                    break
 
-                                    else:
-                                        row.append(0)  # false
+                            if is_truly_answered:
+                                row.append(1)
+                            else:
+                                row.append(0)
 
-                                    num_of_questions += 1
-                                    answered.append(answer1)
-
-                            elif len(multiple_answers) != 1:  # for multiple answers
-                                if answer1 not in answered:  # if it is not in list already
-                                    num_of_questions += 1
-                                    correct_streak = 0  # hold a correct streak for only true answers
-
-                                    for m_answer in multiple_answers:  # append to processed list
-                                        answered.append(m_answer)
-
-                                        if m_answer in m_answer.question.true_answers:
-                                            correct_streak += 1
-
-                                    if correct_streak == len(multiple_answers):
-                                        # all multiple answers have to be correct
-                                        row.append(1)
-                                        num_of_correct_ans += 1
-
-                                    else:
-                                        row.append(0)
-
+                            num_of_questions += 1
+                        break
             # calculating rate and percentage
+            success_rate = 0
+            success_percentage = 0.0
             if num_of_questions == 0:
                 success_rate = 0
             else:
                 max_num_of_questions = num_of_questions
-                success_rate = num_of_correct_ans / num_of_questions
-                success_percentage = success_rate * 100
+                success_rate = (num_of_correct_ans * 1.0) / num_of_questions
+                success_percentage = success_rate * 100.0
+
+            for i in range(len(row), len(columns) - 2):
+                row.append(0)
 
             row.append(success_rate)
             row.append(success_percentage)
@@ -212,7 +202,7 @@ class ExcelParser(metaclass=Singleton):
             for question in poll.poll_questions:  # find question in questions of that poll
 
                 list_number_selected_choice = []
-                #correct_answers = question.true_answers
+                # correct_answers = question.true_answers
                 plt.title(question.description)
 
                 for answer in question.all_answers:
@@ -226,7 +216,7 @@ class ExcelParser(metaclass=Singleton):
 
                 pylist = ax.barh(ind, list_number_selected_choice, width, color="blue")
 
-                for my_answer in question.true_answers: #Green bar for the more than one correct answers.
+                for my_answer in question.true_answers:  # Green bar for the more than one correct answers.
                     index = question.all_answers.index(my_answer)
                     pylist[index].set_color('red')
 
@@ -234,12 +224,15 @@ class ExcelParser(metaclass=Singleton):
                 ax.set_yticklabels(question.all_answers, minor=False)
                 for i, v in enumerate(list_number_selected_choice):
                     ax.text(v, i, " " + str(v) + " times", color='blue', va='center', fontweight='normal')
-                plt.savefig(os.path.join("Poll" + str(poll_counter) + " " + "Question" + str(question_counter) + '.png'),
-                            dpi=300, format='png', bbox_inches='tight')
+                plt.savefig(
+                    os.path.join("Poll" + str(poll_counter) + " " + "Question" + str(question_counter) + '.png'),
+                    dpi=300, format='png', bbox_inches='tight')
                 plt.close()
                 # Insert image of the questions of polls to the excel sheet.
-                question_sheet = poll_excel.add_worksheet("Poll" + str(poll_counter)+ " " + "Question" + str(question_counter))
-                question_sheet.insert_image('A1', "Poll" + str(poll_counter) + " " + "Question" + str(question_counter) + '.png')
+                question_sheet = poll_excel.add_worksheet(
+                    "Poll" + str(poll_counter) + " " + "Question" + str(question_counter))
+                question_sheet.insert_image('A1', "Poll" + str(poll_counter) + " " + "Question" + str(
+                    question_counter) + '.png')
                 question_counter = question_counter + 1
         poll_excel.close()
 
@@ -294,8 +287,6 @@ class ExcelParser(metaclass=Singleton):
                                             multiple_answers):  # all multiple answers have to be correct
 
                                         num_of_correct_ans += 1
-
-
 
             # calculating rate and percentage
             if num_of_questions == 0:

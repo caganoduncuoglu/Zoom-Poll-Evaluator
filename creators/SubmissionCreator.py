@@ -24,7 +24,15 @@ class SubmissionCreator(metaclass=Singleton):
 
         if not is_attendance_question:
             for curr_poll in all_polls:  # Finding poll by looking answered questions are the same or not.
-                if set([str(k) for k in q_and_a.keys()]) == set([str(q) for q in curr_poll.poll_questions]):
+                stu_set = set([str(k) for k in q_and_a.keys()])
+                poll_set = set([str(q) for q in curr_poll.poll_questions])
+                is_match = True
+                for set_item in stu_set:
+                    if set_item not in poll_set:
+                        is_match = False
+                        break
+
+                if is_match:
                     # Found matching poll
                     poll = curr_poll
 
@@ -33,7 +41,7 @@ class SubmissionCreator(metaclass=Singleton):
                 exit(-1)
 
         submit_date_parsed = submit_date.split(" ")
-        base_time = submit_date_parsed[1][0:2]
+        base_time = submit_date_parsed[1]
         attendance = AttendanceCreator().create_attendance(filename, base_time, is_attendance_question)
 
         if not is_attendance_question:

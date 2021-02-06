@@ -1,5 +1,6 @@
+import json
+
 import jsonpickle
-from types import SimpleNamespace
 
 from creators.AttendanceCreator import AttendanceCreator
 from utils.Singleton import Singleton
@@ -22,3 +23,8 @@ class JsonParser(metaclass=Singleton):
     def write_attendances(self, attendances, filename):
         with open(filename, "w") as f:
             f.write(jsonpickle.encode(attendances))
+
+    def read_config(self, filename):
+        with open(filename) as f:
+            config_dict = json.load(f)
+            return config_dict
