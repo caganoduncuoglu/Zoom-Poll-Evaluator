@@ -1,4 +1,4 @@
-import os
+import os,glob
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -235,7 +235,9 @@ class ExcelParser(metaclass=Singleton):
                     question_counter) + '.png')
                 question_counter = question_counter + 1
         poll_excel.close()
-
+        for pngfiles in glob.glob("./*.png"):
+            os.remove("./*.png")
+            
     def write_all_poll_outcomes(self, students, submissions, poll, poll_count):
         rows = []  # rows will be added to this list
         columns = ['Quiz Poll Name', 'Date']
