@@ -1,0 +1,11 @@
+{
+  "student_list_filename": "CES3063_Fall2020_rptSinifListesi.XLS",
+  "read_key_filenames": [
+    "CSE3063 OOSD Weekly Session 1 - Monday Quizzes ANSWER KEY.txt",
+    "CSE3063 OOSD Weekly Session 2 - Tuesday Quizzes ANSWER KEY.txt"
+  ],
+  "attendance_json_filename": "attendances.json",
+  "poll_report_filenames": [
+    "New Poll Reports/97056655049_PollReport_20-10-2020.csv"
+  ]
+}

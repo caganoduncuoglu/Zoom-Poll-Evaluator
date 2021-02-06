@@ -48,7 +48,7 @@ class ExcelParser(metaclass=Singleton):
         for index, row in df.iterrows():
             sc.create_student(
                 number=row['studentid'], name=row['firstname'], surname=row['lastname'],
-                description=pd.isna(row['repeat'])
+                description=not pd.isna(row['repeat'])
             )
 
     def read_key(self, filename: str = None):
@@ -112,13 +112,8 @@ class ExcelParser(metaclass=Singleton):
                    'Attendance Rate']
         rows = []
         for student in students:
-            poll_attendances_count = 0
-            for attendance in student.attendances:
-                if attendance.is_poll_question:
-                    poll_attendances_count += 1
-
-            row = [student.number, student.name, student.surname, student.description, poll_attendances_count,
-                   len(student.attendances), (len(student.attendances) * 1.0) / len(attendances)]
+            row = [student.number, student.name, student.surname, student.description, len(student.attendances),
+                   len(attendances), (len(student.attendances) * 1.0) / len(attendances)]
             rows.append(row)
 
         output = pd.DataFrame(rows, columns=columns)
@@ -130,9 +125,6 @@ class ExcelParser(metaclass=Singleton):
 
         max_num_of_questions = 0
         for student in students:
-            if student.name == "HAYRULLAH":
-                print("test")
-
             num_of_questions = 0  # each field will reset for each student
             num_of_correct_ans = 0
             row = [student.number, student.name, student.surname, student.description]
@@ -244,57 +236,53 @@ class ExcelParser(metaclass=Singleton):
         for student in students:
             num_of_questions = 0  # each field will reset for each student
             num_of_correct_ans = 0
-            success_rate = None
-            success_percentage = None
             row = []
 
+            is_this_student_answered = False
             for submission in submissions:  # find current poll submissions
                 if submission.poll == poll:
-
                     if submission.student == student:  # find student in submission list.
-                        answered = []
+                        is_this_student_answered = True
+                        # answered = []
                         row.append(poll.name)
                         row.append(submission.submitted_datetime)
 
-                        for answer1 in submission.student_answers:  # for each answer in this submission check if it is true.
-                            multiple_answers = [answer1]
+                        for question in submission.poll.poll_questions:
+                            related_student_answers = []
 
-                            for answer2 in submission.student_answers:  # find if multiple answer exists
-                                if answer1.question == answer2.question and answer1 != answer2:
-                                    multiple_answers.append(answer2)
+                            for answer in submission.student_answers:
+                                if answer.question.description == question.description:
+                                    related_student_answers.append(answer)
 
-                            if len(multiple_answers) == 1:  # for single answers
-                                if answer1 not in answered:  # avoiding adding last answer of multiple answers
-                                    if answer1 in answer1.question.true_answers:  # if answer matches with true answer
-
+                            is_truly_answered = False
+                            for related_student_curr_answer in related_student_answers:
+                                for question_true_answer in question.true_answers:
+                                    if related_student_curr_answer.description.strip() == question_true_answer.description.strip():
                                         num_of_correct_ans += 1
+                                        is_truly_answered = True
+                                        break
+                                if is_truly_answered:
+                                    break
 
-                                    num_of_questions += 1
-                                    answered.append(answer1)
-
-                            elif len(multiple_answers) != 1:  # for multiple answers
-                                if answer1 not in answered:  # if it is not in list already
-                                    num_of_questions += 1
-                                    correct_streak = 0  # hold a correct streak for only true answers
-
-                                    for m_answer in multiple_answers:  # append to processed list
-                                        answered.append(m_answer)
-
-                                        if m_answer in m_answer.question.true_answers:
-                                            correct_streak += 1
-
-                                    if correct_streak == len(
-                                            multiple_answers):  # all multiple answers have to be correct
-
-                                        num_of_correct_ans += 1
+                            num_of_questions += 1
+                        break
 
             # calculating rate and percentage
+            success_rate = 0
+            success_percentage = 0.0
             if num_of_questions == 0:
                 success_rate = 0
             else:
                 max_num_of_questions = num_of_questions
-                success_rate = num_of_correct_ans / num_of_questions
-                success_percentage = success_rate * 100
+                success_rate = (num_of_correct_ans * 1.0) / num_of_questions
+                success_percentage = success_rate * 100.0
+
+            if not is_this_student_answered:
+                row.append(poll.name)
+                row.append("-")
+
+            for i in range(len(row), len(columns) - 2):
+                row.append(0)
 
             row.append(success_rate)
             row.append(success_percentage)
