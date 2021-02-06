@@ -55,13 +55,6 @@ class ExcelParser(metaclass=Singleton):
         if filename is None:
             filename = input("Please enter a filename for an answer key file:\n")
 
-        # next line is for debugging
-        # pd.set_option('display.max_rows', None, 'display.max_columns', None, 'display.width', None)
-
-        # df: pd.DataFrame = pd.read_csv(filename, sep='\t', header=None)
-        # pollname = df[0][0]
-        # df.drop(inplace=True, axis=0, labels=0)
-        # df.reset_index(inplace=True, drop=True)
         f = open(filename, "r")
 
         pc = PollCreator()
@@ -70,7 +63,7 @@ class ExcelParser(metaclass=Singleton):
         curr_poll_name = None
         curr_question_desc = None
         for line in f:
-            if "poll " in line and "polls" not in line:
+            if "poll " in line.lower() and "polls" not in line.lower():
                 pc.create_poll(curr_poll_name, q_and_a)  # Create a poll with completed read operations.
                 q_and_a.clear()  # Clear questions for a new poll.
                 curr_poll_name = line.split("\t")[0].split(":")[1]
@@ -81,9 +74,6 @@ class ExcelParser(metaclass=Singleton):
                     q_and_a[curr_question_desc].append(line.split(":")[1][:-1])
                 else:
                     q_and_a[curr_question_desc] = []
-
-            # q_and_a[row[0]] = self._get_tokenized_answers(row[1])
-        # pc.create_poll(pollname, q_and_a)
 
     def read_submissions(self, filename: str = None):
         if filename is None:
@@ -98,7 +88,11 @@ class ExcelParser(metaclass=Singleton):
         df.drop(labels=0, axis=0, inplace=True)
         df.reset_index(drop=True, inplace=True)
         sc = SubmissionCreator()
+
+        poll_time = df.loc[3][2]
         for index, row in df.iterrows():
+            if len(row) < 5:
+                continue
             q_and_a = dict()
             for colindex, cell in row.iteritems():
                 if colindex < 4 or colindex % 2 == 1:
