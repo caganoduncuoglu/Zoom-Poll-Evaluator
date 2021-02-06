@@ -4,9 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import xlsxwriter
-import openpyxl
-import xlrd
-
 
 from creators.PollCreator import PollCreator
 from creators.StudentCreator import StudentCreator
@@ -60,15 +57,33 @@ class ExcelParser(metaclass=Singleton):
 
         # next line is for debugging
         # pd.set_option('display.max_rows', None, 'display.max_columns', None, 'display.width', None)
-        df: pd.DataFrame = pd.read_csv(filename, sep=';', header=None)
-        pollname = df[0][0]
-        df.drop(inplace=True, axis=0, labels=0)
-        df.reset_index(inplace=True, drop=True)
+
+        # df: pd.DataFrame = pd.read_csv(filename, sep='\t', header=None)
+        # pollname = df[0][0]
+        # df.drop(inplace=True, axis=0, labels=0)
+        # df.reset_index(inplace=True, drop=True)
+        f = open(filename, "r")
+
         pc = PollCreator()
         q_and_a = dict()
-        for index, row in df.iterrows():
-            q_and_a[row[0]] = self._get_tokenized_answers(row[1])
-        pc.create_poll(pollname, q_and_a)
+
+        curr_poll_name = None
+        curr_question_desc = None
+        for line in f:
+            if "poll " in line and "polls" not in line:
+                pc.create_poll(curr_poll_name, q_and_a)  # Create a poll with completed read operations.
+                q_and_a.clear()  # Clear questions for a new poll.
+                curr_poll_name = line.split("\t")[0].split(":")[1]
+            elif "choice" in line.lower():
+                curr_question_desc = line[3:]  # This can be changed because the size of questions is unknown.
+            elif "answer" in line.lower():
+                if curr_question_desc in q_and_a.keys():
+                    q_and_a[curr_question_desc].append(line.split(":")[1][:-1])
+                else:
+                    q_and_a[curr_question_desc] = []
+
+            # q_and_a[row[0]] = self._get_tokenized_answers(row[1])
+        # pc.create_poll(pollname, q_and_a)
 
     def read_submissions(self, filename: str = None):
         if filename is None:

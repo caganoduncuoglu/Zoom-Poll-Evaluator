@@ -1,18 +1,16 @@
 import os
 
-from pandas import DataFrame
-
 from creators.AttendanceCreator import AttendanceCreator
-from utils.ExcelParser import ExcelParser
-
-from creators.StudentCreator import StudentCreator
 from creators.PollCreator import PollCreator
+from creators.StudentCreator import StudentCreator
 from creators.SubmissionCreator import SubmissionCreator
+from utils.ExcelParser import ExcelParser
 from utils.JsonParser import JsonParser
 
 ExcelParser().read_students("CES3063_Fall2020_rptSinifListesi.XLS")
 print(StudentCreator().students)
-ExcelParser().read_key("design_poll.csv")
+ExcelParser().read_key("CSE3063 OOSD Weekly Session 1 - Monday Quizzes ANSWER KEY.txt")
+ExcelParser().read_key("CSE3063 OOSD Weekly Session 2 - Tuesday Quizzes ANSWER KEY.txt")
 # ExcelParser().read_key("development_poll.csv")
 print(PollCreator().polls)
 attendancefilename = "attendances.json"
