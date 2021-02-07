@@ -156,7 +156,7 @@ class ExcelParser(metaclass=Singleton):
                             is_truly_answered = False
                             for related_student_curr_answer in related_student_answers:
                                 for question_true_answer in question.true_answers:
-                                    if related_student_curr_answer.description.strip() == question_true_answer.description.strip():
+                                    if related_student_curr_answer.description.lower().strip() == question_true_answer.description.lower().strip():
                                         num_of_correct_ans += 1
                                         is_truly_answered = True
                                         break
