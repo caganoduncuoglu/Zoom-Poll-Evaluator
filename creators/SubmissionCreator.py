@@ -24,8 +24,10 @@ class SubmissionCreator(metaclass=Singleton):
 
         if not is_attendance_question:
             for curr_poll in all_polls:  # Finding poll by looking answered questions are the same or not.
-                stu_set = set([str(k) for k in q_and_a.keys()])
-                poll_set = set([str(q) for q in curr_poll.poll_questions])
+                stu_set = set(
+                    [str(k).replace(" ", "").lower().replace("\n", "").replace("\t", "") for k in q_and_a.keys()])
+                poll_set = set([str(q).replace(" ", "").lower().replace("\n", "").replace("\t", "") for q in
+                                curr_poll.poll_questions])
                 is_match = True
                 for set_item in stu_set:
                     if set_item not in poll_set:
@@ -52,7 +54,8 @@ class SubmissionCreator(metaclass=Singleton):
 
                 # TODO Maybe some wrapper methods in PolLCreator for getting question instances would make things easier
                 for question in poll.poll_questions:  # Finding question for current answer.
-                    if question.description == key:
+                    if question.description.replace(" ", "").lower().replace("\n", "").replace("\t", "") \
+                            == key.replace(" ", "").lower().replace("\n", "").replace("\t", ""):
                         question_to_insert = question
                         break
 

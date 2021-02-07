@@ -56,7 +56,7 @@ class ExcelParser(metaclass=Singleton):
         if filename is None:
             filename = input("Please enter a filename for an answer key file:\n")
 
-        f = open(filename, "r")
+        f = open(filename, "r", encoding="utf-8")
 
         pc = PollCreator()
         q_and_a = dict()
@@ -75,10 +75,13 @@ class ExcelParser(metaclass=Singleton):
                 curr_line = curr_line.replace(" ( Single Choice)", "")
                 curr_question_desc = curr_line
             elif "answer" in line.lower():
+                answerstr = line.split(":")[1][:-1].strip()
                 if curr_question_desc in q_and_a.keys():
-                    q_and_a[curr_question_desc].append(line.split(":")[1][:-1])
+                    q_and_a[curr_question_desc].append(answerstr)
                 else:
-                    q_and_a[curr_question_desc] = [line.split(":")[1][:-1]]
+                    q_and_a[curr_question_desc] = [answerstr]
+
+        pc.create_poll(curr_poll_name, q_and_a)
 
     def read_submissions(self, filename: str = None):
         if filename is None:
@@ -88,6 +91,10 @@ class ExcelParser(metaclass=Singleton):
         # pd.set_option('display.max_rows', None, 'display.max_columns', None, 'display.width', None)
         df: pd.DataFrame = pd.read_csv(filename, sep=',', index_col=False, header=None, names=range(
             self._read_max_file_column_count(filename)))
+        mask = df.applymap(type) != bool
+        d = {True: "TRUE", False: "FALSE"}
+        df = df.where(mask, df.replace(d))
+
         df.dropna(axis=1, how='all', inplace=True)
         df.drop(labels=0, axis=1, inplace=True)
         df.drop(labels=0, axis=0, inplace=True)
@@ -210,7 +217,6 @@ class ExcelParser(metaclass=Singleton):
 
                 list_number_selected_choice = []
                 # correct_answers = question.true_answers
-                plt.title(question.description)
 
                 for answer in question.all_answers:
                     # appends the number of student selections of answers at that question in the list.
@@ -231,6 +237,10 @@ class ExcelParser(metaclass=Singleton):
                 ax.set_yticklabels(question.all_answers, minor=False)
                 for i, v in enumerate(list_number_selected_choice):
                     ax.text(v, i, " " + str(v) + " times", color='blue', va='center', fontweight='normal')
+
+                plt.title(question.description,
+                          fontsize=10,
+                          color="green")
                 plt.savefig(
                     os.path.join("Poll" + str(poll_counter) + " " + "Question" + str(question_counter) + '.png'),
                     dpi=300, format='png', bbox_inches='tight')
