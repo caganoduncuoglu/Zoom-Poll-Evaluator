@@ -246,7 +246,7 @@ class ExcelParser(metaclass=Singleton):
 
     def write_all_poll_outcomes(self, students, submissions, poll, poll_count):
         rows = []  # rows will be added to this list
-        columns = ['Quiz Poll Name', 'Date']
+        columns = []
 
         max_num_of_questions = 0
         for student in students:
@@ -260,8 +260,8 @@ class ExcelParser(metaclass=Singleton):
                     if submission.student == student:  # find student in submission list.
                         is_this_student_answered = True
                         # answered = []
-                        row.append(poll.name)
-                        row.append(submission.submitted_datetime)
+                        if poll.name not in columns:
+                            columns.append(poll.name)
 
                         for question in submission.poll.poll_questions:
                             related_student_answers = []
@@ -273,7 +273,7 @@ class ExcelParser(metaclass=Singleton):
                             is_truly_answered = False
                             for related_student_curr_answer in related_student_answers:
                                 for question_true_answer in question.true_answers:
-                                    if related_student_curr_answer.description.strip() == question_true_answer.description.strip():
+                                    if related_student_curr_answer.description.lower().strip() == question_true_answer.description.lower().strip():
                                         num_of_correct_ans += 1
                                         is_truly_answered = True
                                         break
@@ -283,45 +283,23 @@ class ExcelParser(metaclass=Singleton):
                             num_of_questions += 1
                         break
 
-            # calculating rate and percentage
-            success_rate = 0
-            success_percentage = 0.0
-            if num_of_questions == 0:
-                success_rate = 0
-            else:
-                max_num_of_questions = num_of_questions
-                success_rate = (num_of_correct_ans * 1.0) / num_of_questions
-                success_percentage = success_rate * 100.0
-
-            if not is_this_student_answered:
-                row.append(poll.name)
-                row.append("-")
-
-            for i in range(len(row), len(columns) - 2):
-                row.append(0)
-
-            row.append(success_rate)
-            row.append(success_percentage)
+            row.append(num_of_correct_ans)
             rows.append(row)
 
-        columns.append('Success Rate')  # continue appending column tags
-        columns.append('Success Percentage')
-
-        output2 = pd.DataFrame(rows, columns=columns)
-        output = pd.read_excel('GlobalList.xlsx')
+        output2 = pd.DataFrame(rows, columns=columns, index=np.arange(1, len(rows) + 1))
+        output = pd.read_excel('GlobalList.xlsx', index_col=0)
         output = output.join(output2, rsuffix=poll_count)
-        output = output.drop(output.columns[0], axis=1)
         output['Student No'] = output['Student No'].astype(str)
         output.to_excel('GlobalList.xlsx')
 
     def write_all_students(self, students):
         rows = []  # rows will be added to this list
-        columns = ['Student No', 'Name', 'Surname', 'Repeat']
+        columns = ['Student No', 'Full Name', 'Repeat']
 
         for student in students:
-            row = [student.number, student.name, student.surname, student.description]
+            row = [student.number, student.name + ' ' + student.surname, student.description]
             rows.append(row)
 
-        output = pd.DataFrame(rows, columns=columns)  # output as excel
+        output = pd.DataFrame(rows, columns=columns, index=np.arange(1, len(rows) + 1))  # output as excel
         output['Student No'] = output['Student No'].astype(str)
         output.to_excel('GlobalList.xlsx')  # output
