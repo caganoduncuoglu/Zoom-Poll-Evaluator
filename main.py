@@ -31,6 +31,7 @@ ExcelParser().write_session_attendance(StudentCreator().students, AttendanceCrea
 ExcelParser().write_all_students(StudentCreator().students)
 
 poll_count = 1
+total_questions_processed = 0
 for poll in PollCreator().polls:
     isExist = False
     for sub in SubmissionCreator().submissions:
@@ -45,6 +46,7 @@ for poll in PollCreator().polls:
                                       poll)
     ExcelParser().write_poll_statistics(poll, poll_count)
 
-    ExcelParser().write_all_poll_outcomes(StudentCreator().students, SubmissionCreator().submissions, poll, poll_count)
+    total_questions_processed += len(poll.poll_questions)
+    ExcelParser().write_all_poll_outcomes(StudentCreator().students, SubmissionCreator().submissions, poll, total_questions_processed)
 
     poll_count += 1

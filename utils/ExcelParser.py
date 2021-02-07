@@ -244,11 +244,16 @@ class ExcelParser(metaclass=Singleton):
         for pngfile in glob.glob("./*.png"):
             os.remove(pngfile)
 
-    def write_all_poll_outcomes(self, students, submissions, poll, poll_count):
+    def write_all_poll_outcomes(self, students, submissions, poll, total_questions_processed):
         rows = []  # rows will be added to this list
         columns = []
 
-        max_num_of_questions = 0
+        poll_datetime = poll.poll_time
+        column_name = poll.name.replace(" ", "_") + '_' + poll_datetime \
+            .replace("-", "_").replace(" ", "_").replace(":", "_")
+        if column_name not in columns:
+            columns.append(column_name)
+
         for student in students:
             num_of_questions = 0  # each field will reset for each student
             num_of_correct_ans = 0
@@ -260,8 +265,6 @@ class ExcelParser(metaclass=Singleton):
                     if submission.student == student:  # find student in submission list.
                         is_this_student_answered = True
                         # answered = []
-                        if poll.name not in columns:
-                            columns.append(poll.name)
 
                         for question in submission.poll.poll_questions:
                             related_student_answers = []
@@ -287,19 +290,33 @@ class ExcelParser(metaclass=Singleton):
             rows.append(row)
 
         output2 = pd.DataFrame(rows, columns=columns, index=np.arange(1, len(rows) + 1))
-        output = pd.read_excel('GlobalList.xlsx', index_col=0)
-        output = output.join(output2, rsuffix=poll_count)
+        output: pd.DataFrame = pd.read_excel('CSE3063_2020FALL_QuizGrading.xlsx', index_col=0)
+
+        output = output.join(output2)
+        if 'Global Accuracy' in output.columns:
+            output = output[[c for c in output if c not in ['Global Accuracy']] + ['Global Accuracy']]
+        global_accuracy_col = output.apply(self.calculate_global_accuracy, axis=1, args=(total_questions_processed,))
+        output = output.assign(**{'Global Accuracy': global_accuracy_col.values})
+
         output['Student No'] = output['Student No'].astype(str)
-        output.to_excel('GlobalList.xlsx')
+        output.to_excel('CSE3063_2020FALL_QuizGrading.xlsx')
 
     def write_all_students(self, students):
         rows = []  # rows will be added to this list
-        columns = ['Student No', 'Full Name', 'Repeat']
+        columns = ['Student No', 'Full Name']
 
         for student in students:
-            row = [student.number, student.name + ' ' + student.surname, student.description]
+            row = [student.number, student.name + ' ' + student.surname]
             rows.append(row)
 
         output = pd.DataFrame(rows, columns=columns, index=np.arange(1, len(rows) + 1))  # output as excel
         output['Student No'] = output['Student No'].astype(str)
-        output.to_excel('GlobalList.xlsx')  # output
+        output.to_excel('CSE3063_2020FALL_QuizGrading.xlsx')  # output
+
+    def calculate_global_accuracy(self, row, question_count):
+        global_accuracy = 0
+        for i in range(2, len(row)):
+            if (row.index[i] == "Global Accuracy"):
+                continue
+            global_accuracy += row[i]
+        return np.round(global_accuracy / question_count * 100)
