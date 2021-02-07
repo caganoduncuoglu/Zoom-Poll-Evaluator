@@ -164,7 +164,7 @@ class ExcelParser(metaclass=Singleton):
 
                         break
 
-            if student_found == False:
+            if student_found == False:  # if student didn't attend the poll
                 num_of_empty_ans = num_of_questions
 
             row.append(num_of_correct_ans)
