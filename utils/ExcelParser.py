@@ -75,10 +75,11 @@ class ExcelParser(metaclass=Singleton):
                 curr_line = curr_line.replace(" ( Single Choice)", "")
                 curr_question_desc = curr_line
             elif "answer" in line.lower():
+                answerstr = line.split(":")[1][:-1].strip()
                 if curr_question_desc in q_and_a.keys():
-                    q_and_a[curr_question_desc].append(line.split(":")[1][:-1])
+                    q_and_a[curr_question_desc].append(answerstr)
                 else:
-                    q_and_a[curr_question_desc] = [line.split(":")[1][:-1]]
+                    q_and_a[curr_question_desc] = [answerstr]
 
         pc.create_poll(curr_poll_name, q_and_a)
 
