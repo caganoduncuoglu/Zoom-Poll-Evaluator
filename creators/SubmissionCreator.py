@@ -14,7 +14,7 @@ class SubmissionCreator(metaclass=Singleton):
         self.submissions = []
 
     def create_submission(self, username, email, submit_date, q_and_a,
-                          filename):  # Creates a new submission from a student.
+                          filename, poll_time):  # Creates a new submission from a student.
         poll = None
         all_polls = PollCreator().polls
         curr_poll: Poll
@@ -42,11 +42,13 @@ class SubmissionCreator(metaclass=Singleton):
                 print("Poll could not matched with existing ones.")
                 exit(-1)
 
-        submit_date_parsed = submit_date.split(" ")
+        submit_date_parsed = poll_time.split(" ")
         base_time = submit_date_parsed[1]
         attendance = AttendanceCreator().create_attendance(filename, base_time, is_attendance_question)
 
         if not is_attendance_question:
+            poll.poll_time = poll_time
+
             student_answers = []
             for key in q_and_a:  # Iterating through each question and answer pairs.
                 question_to_insert = None

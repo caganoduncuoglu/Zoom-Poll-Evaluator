@@ -4,6 +4,7 @@ class Poll(object):
         if poll_questions is None:
             poll_questions = []
 
+        self.poll_time = None
         self.poll_questions = poll_questions
         self.name = name
 

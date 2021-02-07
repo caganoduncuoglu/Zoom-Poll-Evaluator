@@ -113,7 +113,7 @@ class ExcelParser(metaclass=Singleton):
                     break
                 else:
                     q_and_a[cell] = self._get_tokenized_answers(str(row[colindex + 1]))
-            sc.create_submission(row[1], row[2], poll_time, q_and_a, filename)
+            sc.create_submission(row[1], row[2], row[3], q_and_a, filename, poll_time)
 
     def write_session_attendance(self, students, attendances):
         columns = ['Student No', 'Name', 'Surname', 'Description', 'Poll Attendances', 'Total Attendance',
