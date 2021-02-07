@@ -127,6 +127,58 @@ class ExcelParser(metaclass=Singleton):
         output = pd.DataFrame(rows, columns=columns)
         output.to_excel("student_attendances.xlsx")
 
+    def write_student_quiz_report(self, students, submissions, poll):
+
+        for student in students:
+            rows = []  # rows will be added to this list
+            columns = ['Question Text', 'Given Answer', 'Correct Answer', 'Correct']
+
+            for submission in submissions:  # find current poll submissions
+                if submission.poll == poll:
+                    if submission.student == student:  # find student in submission list.
+                        for question in submission.poll.poll_questions:
+                            row = []
+                            is_correct = 0
+
+                            related_student_answers = []
+
+                            row.append(question.description)  # question text
+
+                            for answer in submission.student_answers:  # collect student's answers
+                                if answer.question.description == question.description:
+                                    related_student_answers.append(answer)
+
+                            student_answers = ';'.join(map(str, related_student_answers))  # concat multiple answers
+                            true_answers = ';'.join(map(str, question.true_answers))
+                            row.append(student_answers)  # student answers
+                            row.append(true_answers)  # true answers
+
+                            is_truly_answered = False
+
+                            for related_student_curr_answer in related_student_answers:
+                                for question_true_answer in question.true_answers:  # check if student answer and true answer match
+                                    if related_student_curr_answer.description.lower().strip() == question_true_answer.description.lower().strip():
+                                        is_truly_answered = True
+                                        is_correct = 1
+                                        break
+
+                                if is_truly_answered:
+                                    break
+
+                            row.append(is_correct)
+                            rows.append(row)  # append row elements to row
+
+                        break
+
+
+            output = pd.DataFrame(rows, columns=columns)  # output as excel
+            poll_time = poll.poll_time.replace("-", "_")
+            name_of_poll = poll.name.replace(" ", "_") + "_" + poll_time.replace(":", "_")
+            student_name = student.name.replace(" ", "_") + "_" + student.surname.replace(" ", "_")
+            poll_name = "Quiz Reports For Each Student" + "/" + name_of_poll + "_" + student_name + ".xlsx"
+            output.to_excel(poll_name)  # output
+
+
     def write_poll_outcomes(self, students, submissions, poll):
         rows = []  # rows will be added to this list
         columns = ['Student No', 'Name', 'Surname', 'Description', 'Num of Questions', 'Num of Correct Ans', 'Num of Wrong Ans', 'Num of Empty Ans']
