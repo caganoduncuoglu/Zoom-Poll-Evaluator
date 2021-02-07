@@ -92,7 +92,7 @@ class ExcelParser(metaclass=Singleton):
         df: pd.DataFrame = pd.read_csv(filename, sep=',', index_col=False, header=None, names=range(
             self._read_max_file_column_count(filename)))
         mask = df.applymap(type) != bool
-        d = {True: "TRUE", False: "FALSE"}
+        d = {True: "True", False: "False"}
         df = df.where(mask, df.replace(d))
 
         df.dropna(axis=1, how='all', inplace=True)
