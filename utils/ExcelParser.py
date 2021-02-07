@@ -311,7 +311,7 @@ class ExcelParser(metaclass=Singleton):
         columns = []
 
         poll_datetime = poll.poll_time
-        column_name = poll.name.replace(" ", "_") + '_' + poll_datetime \
+        column_name = "Poll_" + poll.poll_number + "_" + poll.name.replace(" ", "_") + '_' + poll_datetime \
             .replace("-", "_").replace(" ", "_").replace(":", "_")
         if column_name not in columns:
             columns.append(column_name)
