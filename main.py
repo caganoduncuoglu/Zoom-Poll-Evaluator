@@ -30,8 +30,8 @@ ExcelParser().write_session_attendance(StudentCreator().students, AttendanceCrea
 
 ExcelParser().write_all_students(StudentCreator().students)
 
-if not os.path.exists('Quiz Reports For Each Student'):
-    os.makedirs('Quiz Reports For Each Student')
+if not os.path.exists(config["quiz_reports_student_filename"]):
+    os.makedirs(config["quiz_reports_student_filename"])
 
 poll_count = 1
 for poll in PollCreator().polls:

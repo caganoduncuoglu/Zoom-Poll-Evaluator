@@ -8,8 +8,8 @@ class PollCreator(metaclass=Singleton):
     def __init__(self):
         self.polls = []
 
-    def create_poll(self, name, q_and_a):
-        poll = Poll(name)
+    def create_poll(self, name, poll_number, q_and_a):
+        poll = Poll(name, poll_number)
         # TODO: Might an error occur here because of a warning, look here later.
         for key in q_and_a:
             new_question = Question(key, list(), poll, None)

@@ -63,12 +63,16 @@ class ExcelParser(metaclass=Singleton):
 
         curr_poll_name = None
         curr_question_desc = None
+        poll_number = None
         for line in f:
             if "poll " in line.lower() and "polls" not in line.lower():
                 if curr_poll_name is not None:
-                    pc.create_poll(curr_poll_name, q_and_a)  # Create a poll with completed read operations.
+                    pc.create_poll(curr_poll_name, poll_number,
+                                   q_and_a)  # Create a poll with completed read operations.
                 q_and_a.clear()  # Clear questions for a new poll.
-                curr_poll_name = line.split("\t")[0].split(":")[1]
+                full_poll_name = line.split("\t")[0]
+                poll_number = full_poll_name.split(":")[0].split(" ")[1]
+                curr_poll_name = full_poll_name.split(":")[1]
             elif "choice" in line.lower():
                 curr_line = line[3:-1]
                 curr_line = curr_line.replace(" ( Multiple Choice)", "")
@@ -81,7 +85,7 @@ class ExcelParser(metaclass=Singleton):
                 else:
                     q_and_a[curr_question_desc] = [answerstr]
 
-        pc.create_poll(curr_poll_name, q_and_a)
+        pc.create_poll(curr_poll_name, poll_number, q_and_a)
 
     def read_submissions(self, filename: str = None):
         if filename is None:
