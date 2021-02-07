@@ -202,7 +202,6 @@ class ExcelParser(metaclass=Singleton):
 
                 list_number_selected_choice = []
                 # correct_answers = question.true_answers
-                plt.title(question.description)
 
                 for answer in question.all_answers:
                     # appends the number of student selections of answers at that question in the list.
@@ -223,6 +222,10 @@ class ExcelParser(metaclass=Singleton):
                 ax.set_yticklabels(question.all_answers, minor=False)
                 for i, v in enumerate(list_number_selected_choice):
                     ax.text(v, i, " " + str(v) + " times", color='blue', va='center', fontweight='normal')
+
+                plt.title(question.description,
+                          fontsize=10,
+                          color="green")
                 plt.savefig(
                     os.path.join("Poll" + str(poll_counter) + " " + "Question" + str(question_counter) + '.png'),
                     dpi=300, format='png', bbox_inches='tight')
