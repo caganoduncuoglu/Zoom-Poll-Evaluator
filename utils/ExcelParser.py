@@ -63,12 +63,16 @@ class ExcelParser(metaclass=Singleton):
 
         curr_poll_name = None
         curr_question_desc = None
+        poll_number = None
         for line in f:
             if "poll " in line.lower() and "polls" not in line.lower():
                 if curr_poll_name is not None:
-                    pc.create_poll(curr_poll_name, q_and_a)  # Create a poll with completed read operations.
+                    pc.create_poll(curr_poll_name, poll_number,
+                                   q_and_a)  # Create a poll with completed read operations.
                 q_and_a.clear()  # Clear questions for a new poll.
-                curr_poll_name = line.split("\t")[0].split(":")[1]
+                full_poll_name = line.split("\t")[0]
+                poll_number = full_poll_name.split(":")[0].split(" ")[2]
+                curr_poll_name = full_poll_name.split(":")[1]
             elif "choice" in line.lower():
                 curr_line = line[3:-1]
                 curr_line = curr_line.replace(" ( Multiple Choice)", "")
@@ -81,7 +85,7 @@ class ExcelParser(metaclass=Singleton):
                 else:
                     q_and_a[curr_question_desc] = [answerstr]
 
-        pc.create_poll(curr_poll_name, q_and_a)
+        pc.create_poll(curr_poll_name, poll_number, q_and_a)
 
     def read_submissions(self, filename: str = None):
         if filename is None:
@@ -126,6 +130,58 @@ class ExcelParser(metaclass=Singleton):
 
         output = pd.DataFrame(rows, columns=columns)
         output.to_excel("student_attendances.xlsx")
+
+    def write_student_quiz_report(self, students, submissions, poll):
+
+        for student in students:
+            rows = []  # rows will be added to this list
+            columns = ['Question Text', 'Given Answer', 'Correct Answer', 'Correct']
+
+            for submission in submissions:  # find current poll submissions
+                if submission.poll == poll:
+                    if submission.student == student:  # find student in submission list.
+                        for question in submission.poll.poll_questions:
+                            row = []
+                            is_correct = 0
+
+                            related_student_answers = []
+
+                            row.append(question.description)  # question text
+
+                            for answer in submission.student_answers:  # collect student's answers
+                                if answer.question.description == question.description:
+                                    related_student_answers.append(answer)
+
+                            student_answers = ';'.join(map(str, related_student_answers))  # concat multiple answers
+                            true_answers = ';'.join(map(str, question.true_answers))
+                            row.append(student_answers)  # student answers
+                            row.append(true_answers)  # true answers
+
+                            is_truly_answered = False
+
+                            for related_student_curr_answer in related_student_answers:
+                                for question_true_answer in question.true_answers:  # check if student answer and true answer match
+                                    if related_student_curr_answer.description.lower().strip() == question_true_answer.description.lower().strip():
+                                        is_truly_answered = True
+                                        is_correct = 1
+                                        break
+
+                                if is_truly_answered:
+                                    break
+
+                            row.append(is_correct)
+                            rows.append(row)  # append row elements to row
+
+                        break
+
+
+            output = pd.DataFrame(rows, columns=columns)  # output as excel
+            poll_time = poll.poll_time.replace("-", "_")
+            name_of_poll = "Poll_" + poll.poll_number + "_" + poll.name.replace(" ", "_") + "_" + poll_time.replace(":", "_")
+            student_name = student.name.replace(" ", "_") + "_" + student.surname.replace(" ", "_") + "_" + student.number
+            poll_name = "Quiz Reports For Each Student" + "/" + name_of_poll + "_" + student_name + ".xlsx"
+            output.to_excel(poll_name)  # output
+
 
     def write_poll_outcomes(self, students, submissions, poll):
         rows = []  # rows will be added to this list
@@ -193,8 +249,12 @@ class ExcelParser(metaclass=Singleton):
         columns.append('Accuracy Percentage')
 
         output = pd.DataFrame(rows, columns=columns)  # output as excel
-        poll_name = poll.name + ".xlsx"  # TODO: Name will change
+        poll_time = poll.poll_time.replace("-", "_")
+        name_of_poll = "Poll_" + poll.poll_number + "_" + poll.name.replace(" ", "_") + "_" + poll_time.replace(":",
+                                                                                                                "_")
+        poll_name = name_of_poll + ".xlsx"  # TODO: Name will change
         output.to_excel(poll_name)  # output
+
 
     def write_poll_statistics(self, poll, poll_counter):
 
@@ -216,20 +276,22 @@ class ExcelParser(metaclass=Singleton):
                 width = 0.5  # the width of the bars
                 ind = np.arange(len(list_number_selected_choice))  # the x locations for the groups
 
-                pylist = ax.barh(ind, list_number_selected_choice, width, color="blue")
+                pylist = ax.barh(ind, list_number_selected_choice, width, color="red")
 
                 for my_answer in question.true_answers:  # Green bar for the more than one correct answers.
                     index = question.all_answers.index(my_answer)
-                    pylist[index].set_color('red')
+                    pylist[index].set_color('green')
 
                 ax.set_yticks(ind + width / 2)
                 ax.set_yticklabels(question.all_answers, minor=False)
                 for i, v in enumerate(list_number_selected_choice):
-                    ax.text(v, i, " " + str(v) + " times", color='blue', va='center', fontweight='normal')
+                    ax.text(v, i, " " + str(v) + " times", color='red', va='center', fontweight='normal')
 
                 plt.title(question.description,
                           fontsize=10,
                           color="green")
+
+                plt.legend(["True Answer"], loc="upper right")
                 plt.savefig(
                     os.path.join("Poll" + str(poll_counter) + " " + "Question" + str(question_counter) + '.png'),
                     dpi=300, format='png', bbox_inches='tight')
