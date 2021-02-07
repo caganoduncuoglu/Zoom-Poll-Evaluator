@@ -122,17 +122,23 @@ class ExcelParser(metaclass=Singleton):
 
     def write_poll_outcomes(self, students, submissions, poll):
         rows = []  # rows will be added to this list
-        columns = ['Student No', 'Name', 'Surname', 'Description']
+        columns = ['Student No', 'Name', 'Surname', 'Description', 'Num of Questions', 'Num of Correct Ans', 'Num of Wrong Ans', 'Num of Empty Ans']
+
+        num_of_questions = 0  # find number of questions for that poll
+        for questions in poll.poll_questions:
+            num_of_questions += 1
 
         max_num_of_questions = 0
         for student in students:
-            num_of_questions = 0  # each field will reset for each student
+            num_of_empty_ans = 0
             num_of_correct_ans = 0
-            row = [student.number, student.name, student.surname, student.description]
+            row = [student.number, student.name, student.surname, student.description, num_of_questions]
+            student_found = False
 
             for submission in submissions:  # find current poll submissions
                 if submission.poll == poll:
                     if submission.student == student:  # find student in submission list.
+                        student_found = True
                         for question in submission.poll.poll_questions:
                             related_student_answers = []
 
@@ -150,13 +156,21 @@ class ExcelParser(metaclass=Singleton):
                                 if is_truly_answered:
                                     break
 
-                            if is_truly_answered:
-                                row.append(1)
-                            else:
-                                row.append(0)
+                           # if is_truly_answered:
+                           #     row.append(1)
+                           # else:
+                           #     row.append(0)
 
-                            num_of_questions += 1
+
                         break
+
+            if student_found == False:
+                num_of_empty_ans = num_of_questions
+
+            row.append(num_of_correct_ans)
+            row.append(num_of_questions - num_of_correct_ans - num_of_empty_ans)  # it will change
+            row.append(num_of_empty_ans)
+
             # calculating rate and percentage
             success_rate = 0
             success_percentage = 0.0
@@ -167,23 +181,23 @@ class ExcelParser(metaclass=Singleton):
                 success_rate = (num_of_correct_ans * 1.0) / num_of_questions
                 success_percentage = success_rate * 100.0
 
-            for i in range(len(row), len(columns) - 2):
+            for i in range(len(row), len(columns) ):
                 row.append(0)
 
             row.append(success_rate)
             row.append(success_percentage)
             rows.append(row)
 
-        for i in range(max_num_of_questions):  # it is for columns like Q1, Q2 ...
-            i += 1  # start from Q1
-            tag = "Q" + str(i)
-            columns.append(tag)
+        #for i in range(max_num_of_questions):  # it is for columns like Q1, Q2 ...
+        #    i += 1  # start from Q1
+        #    tag = "Q" + str(i)
+        #    columns.append(tag)
 
-        columns.append('Success Rate')  # continue appending column tags
-        columns.append('Success Percentage')
+        columns.append('Rate of Correct Answers')  # continue appending column tags
+        columns.append('Accuracy Percentage')
 
         output = pd.DataFrame(rows, columns=columns)  # output as excel
-        poll_name = poll.name + ".xlsx"
+        poll_name = poll.name + ".xlsx"  # TODO: Name will change
         output.to_excel(poll_name)  # output
 
     def write_poll_statistics(self, poll, poll_counter):
@@ -230,7 +244,7 @@ class ExcelParser(metaclass=Singleton):
         poll_excel.close()
         for pngfile in glob.glob("./*.png"):
             os.remove(pngfile)
-            
+
     def write_all_poll_outcomes(self, students, submissions, poll, poll_count):
         rows = []  # rows will be added to this list
         columns = ['Quiz Poll Name', 'Date']
