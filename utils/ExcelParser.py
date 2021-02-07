@@ -177,8 +177,8 @@ class ExcelParser(metaclass=Singleton):
 
             output = pd.DataFrame(rows, columns=columns)  # output as excel
             poll_time = poll.poll_time.replace("-", "_")
-            name_of_poll = poll.name.replace(" ", "_") + "_" + poll_time.replace(":", "_")
-            student_name = student.name.replace(" ", "_") + "_" + student.surname.replace(" ", "_")
+            name_of_poll = "Poll_" + poll.poll_number + "_" + poll.name.replace(" ", "_") + "_" + poll_time.replace(":", "_")
+            student_name = student.name.replace(" ", "_") + "_" + student.surname.replace(" ", "_") + "_" + student.number
             poll_name = "Quiz Reports For Each Student" + "/" + name_of_poll + "_" + student_name + ".xlsx"
             output.to_excel(poll_name)  # output
 
@@ -249,8 +249,12 @@ class ExcelParser(metaclass=Singleton):
         columns.append('Accuracy Percentage')
 
         output = pd.DataFrame(rows, columns=columns)  # output as excel
-        poll_name = poll.name + ".xlsx"  # TODO: Name will change
+        poll_time = poll.poll_time.replace("-", "_")
+        name_of_poll = "Poll_" + poll.poll_number + "_" + poll.name.replace(" ", "_") + "_" + poll_time.replace(":",
+                                                                                                                "_")
+        poll_name = name_of_poll + ".xlsx"  # TODO: Name will change
         output.to_excel(poll_name)  # output
+
 
     def write_poll_statistics(self, poll, poll_counter):
 
