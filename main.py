@@ -12,12 +12,15 @@ config = JsonParser().read_config("config.json")
 ExcelParser().read_students(config["student_list_filename"])  # Create students from bys file.
 
 for filename in config["read_key_filenames"]:
+    print("Processing " + filename + " answer key file.", )
     ExcelParser().read_key(filename)
 
 if os.path.exists(config["attendance_json_filename"]):  # Read attendance information from json.
+    print("Reading attendance information from " + config["attendance_json_filename"])
     JsonParser().read_attendances(StudentCreator().students, config["attendance_json_filename"])
 
 for filename in config["poll_report_filenames"]:  # Reading submission for each report.
+    print("Reading " + filename + " submission file.")
     ExcelParser().read_submissions(filename)
 
 # Writing attendances of all students as json for another run.

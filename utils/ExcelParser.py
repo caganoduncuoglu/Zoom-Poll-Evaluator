@@ -80,6 +80,8 @@ class ExcelParser(metaclass=Singleton):
                 else:
                     q_and_a[curr_question_desc] = [line.split(":")[1][:-1]]
 
+        pc.create_poll(curr_poll_name, q_and_a)
+
     def read_submissions(self, filename: str = None):
         if filename is None:
             filename = input("Please enter a filename for an answer key file:\n")
@@ -88,6 +90,10 @@ class ExcelParser(metaclass=Singleton):
         # pd.set_option('display.max_rows', None, 'display.max_columns', None, 'display.width', None)
         df: pd.DataFrame = pd.read_csv(filename, sep=',', index_col=False, header=None, names=range(
             self._read_max_file_column_count(filename)))
+        mask = df.applymap(type) != bool
+        d = {True: "TRUE", False: "FALSE"}
+        df = df.where(mask, df.replace(d))
+
         df.dropna(axis=1, how='all', inplace=True)
         df.drop(labels=0, axis=1, inplace=True)
         df.drop(labels=0, axis=0, inplace=True)
@@ -230,7 +236,7 @@ class ExcelParser(metaclass=Singleton):
         poll_excel.close()
         for pngfile in glob.glob("./*.png"):
             os.remove(pngfile)
-            
+
     def write_all_poll_outcomes(self, students, submissions, poll, poll_count):
         rows = []  # rows will be added to this list
         columns = ['Quiz Poll Name', 'Date']
