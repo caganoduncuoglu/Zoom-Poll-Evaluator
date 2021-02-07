@@ -56,7 +56,7 @@ class ExcelParser(metaclass=Singleton):
         if filename is None:
             filename = input("Please enter a filename for an answer key file:\n")
 
-        f = open(filename, "r")
+        f = open(filename, "r", encoding="utf-8")
 
         pc = PollCreator()
         q_and_a = dict()
