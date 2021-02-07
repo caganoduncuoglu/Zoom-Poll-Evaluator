@@ -272,20 +272,22 @@ class ExcelParser(metaclass=Singleton):
                 width = 0.5  # the width of the bars
                 ind = np.arange(len(list_number_selected_choice))  # the x locations for the groups
 
-                pylist = ax.barh(ind, list_number_selected_choice, width, color="blue")
+                pylist = ax.barh(ind, list_number_selected_choice, width, color="red")
 
                 for my_answer in question.true_answers:  # Green bar for the more than one correct answers.
                     index = question.all_answers.index(my_answer)
-                    pylist[index].set_color('red')
+                    pylist[index].set_color('green')
 
                 ax.set_yticks(ind + width / 2)
                 ax.set_yticklabels(question.all_answers, minor=False)
                 for i, v in enumerate(list_number_selected_choice):
-                    ax.text(v, i, " " + str(v) + " times", color='blue', va='center', fontweight='normal')
+                    ax.text(v, i, " " + str(v) + " times", color='red', va='center', fontweight='normal')
 
                 plt.title(question.description,
                           fontsize=10,
                           color="green")
+
+                plt.legend(["True Answer"], loc="upper right")
                 plt.savefig(
                     os.path.join("Poll" + str(poll_counter) + " " + "Question" + str(question_counter) + '.png'),
                     dpi=300, format='png', bbox_inches='tight')
