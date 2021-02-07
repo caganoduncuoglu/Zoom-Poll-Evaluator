@@ -163,12 +163,6 @@ class ExcelParser(metaclass=Singleton):
                                 if is_truly_answered:
                                     break
 
-                           # if is_truly_answered:
-                           #     row.append(1)
-                           # else:
-                           #     row.append(0)
-
-
                         break
 
             if student_found == False:  # if student didn't attend the poll
@@ -194,11 +188,6 @@ class ExcelParser(metaclass=Singleton):
             row.append(success_rate)
             row.append(success_percentage)
             rows.append(row)
-
-        #for i in range(max_num_of_questions):  # it is for columns like Q1, Q2 ...
-        #    i += 1  # start from Q1
-        #    tag = "Q" + str(i)
-        #    columns.append(tag)
 
         columns.append('Rate of Correct Answers')  # continue appending column tags
         columns.append('Accuracy Percentage')
