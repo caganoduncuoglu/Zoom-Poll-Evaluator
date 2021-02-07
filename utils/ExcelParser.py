@@ -93,8 +93,7 @@ class ExcelParser(metaclass=Singleton):
 
         # next line is for debugging
         # pd.set_option('display.max_rows', None, 'display.max_columns', None, 'display.width', None)
-        df: pd.DataFrame = pd.read_csv(filename, sep=',', index_col=False, header=None, names=range(
-            self._read_max_file_column_count(filename)))
+        df: pd.DataFrame = pd.read_csv(filename, sep=',', index_col=False, header=None, names=range(128))
         mask = df.applymap(type) != bool
         d = {True: "True", False: "False"}
         df = df.where(mask, df.replace(d))
