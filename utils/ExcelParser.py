@@ -268,7 +268,7 @@ class ExcelParser(metaclass=Singleton):
                 width = 0.5  # the width of the bars
                 ind = np.arange(len(list_number_selected_choice))  # the x locations for the groups
 
-                pylist = ax.barh(ind, list_number_selected_choice, width, color="blue")
+                pylist = ax.barh(ind, list_number_selected_choice, width, color="red")
 
                 for my_answer in question.true_answers:  # Green bar for the more than one correct answers.
                     index = question.all_answers.index(my_answer)
