@@ -7,5 +7,6 @@
   "attendance_json_filename": "attendances.json",
   "poll_report_filenames": [
     "New Poll Reports/94502073867_PollReport_26-10-2020.csv"
-  ]
+  ],
+  "quiz_reports_student_filename": "Quiz Reports For Each Student"
 }
