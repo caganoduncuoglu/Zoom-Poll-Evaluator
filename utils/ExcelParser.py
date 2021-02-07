@@ -71,7 +71,7 @@ class ExcelParser(metaclass=Singleton):
                                    q_and_a)  # Create a poll with completed read operations.
                 q_and_a.clear()  # Clear questions for a new poll.
                 full_poll_name = line.split("\t")[0]
-                poll_number = full_poll_name.split(":")[0].split(" ")[1]
+                poll_number = full_poll_name.split(":")[0].split(" ")[2]
                 curr_poll_name = full_poll_name.split(":")[1]
             elif "choice" in line.lower():
                 curr_line = line[3:-1]
